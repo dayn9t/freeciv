@@ -13,6 +13,7 @@ test_sources = [
   'test_oblig_reqs.c',
   'test_counters.c',
   'test_culture.c',
+  'test_citizens.c',
   # Data structure tests
   'test_worklist.c',
   'test_unitlist.c',
@@ -44,12 +45,20 @@ test_sources = [
   'test_improvement.c',
   # Government module tests
   'test_government.c',
+  # Specialist module tests
+  'test_specialist.c',
   # Extras module tests
   'test_extras.c',
+  # Achievement module tests
+  'test_achievements.c',
   # Road module tests
   'test_road.c',
   # Actions module tests
   'test_actions.c',
+  # Events module tests
+  'test_events.c',
+  # Movement module tests
+  'test_movement.c',
 ]
 
 foreach test_file : test_sources
