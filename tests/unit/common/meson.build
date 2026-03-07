@@ -53,6 +53,10 @@ test_sources = [
   'test_achievements.c',
   # Road module tests
   'test_road.c',
+  # Style module tests
+  'test_style.c',
+  # Featured text module tests
+  'test_featured_text.c',
   # Actions module tests
   'test_actions.c',
   # Events module tests
@@ -61,6 +65,14 @@ test_sources = [
   'test_movement.c',
   # Team module tests
   'test_team.c',
+  # Reqtext module tests
+  'test_reqtext.c',
+  # Multipliers module tests
+  'test_multipliers.c',
+  # Spaceship module tests
+  'test_spaceship.c',
+  # Diplomatic treaty module tests
+  'test_diptreaty.c',
 ]
 
 foreach test_file : test_sources
