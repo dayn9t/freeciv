@@ -670,6 +670,570 @@ static void test_predefined_color_chat_public(void **state)
   assert_null(ftc_chat_public.background);
 }
 
+/* Test featured_text_to_plain_text() with strike tags */
+static void test_featured_text_to_plain_text_strike(void **state)
+{
+  const char *input = "[s]Deleted[/s] text";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Deleted text");
+  assert_int_equal(text_tag_list_size(tags), 1);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with underline tags */
+static void test_featured_text_to_plain_text_underline(void **state)
+{
+  const char *input = "Some [u]underlined[/u] text";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Some underlined text");
+  assert_int_equal(text_tag_list_size(tags), 1);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with color background */
+static void test_featured_text_to_plain_text_color_bg(void **state)
+{
+  const char *input = "[c bg=\"#0000FF\"]Blue BG[/c]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Blue BG");
+  assert_int_equal(text_tag_list_size(tags), 1);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with multiple tags */
+static void test_featured_text_to_plain_text_multiple(void **state)
+{
+  const char *input = "[b]Bold[/b] and [i]italic[/i] text";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Bold and italic text");
+  assert_int_equal(text_tag_list_size(tags), 2);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with nested tags */
+static void test_featured_text_to_plain_text_nested(void **state)
+{
+  const char *input = "[b]Bold [i]and italic[/i][/b]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Bold and italic");
+  assert_int_equal(text_tag_list_size(tags), 2);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with unclosed tag */
+static void test_featured_text_to_plain_text_unclosed(void **state)
+{
+  const char *input = "[b]Bold text without end";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Bold text without end");
+  assert_int_equal(text_tag_list_size(tags), 1);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with full tag names */
+static void test_featured_text_to_plain_text_full_names(void **state)
+{
+  const char *input = "[bold]Bold[/bold] [italic]Italic[/italic]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Bold Italic");
+  assert_int_equal(text_tag_list_size(tags), 2);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with empty string */
+static void test_featured_text_to_plain_text_empty(void **state)
+{
+  const char *input = "";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "");
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with case insensitive tags */
+static void test_featured_text_to_plain_text_case_insensitive(void **state)
+{
+  const char *input = "[B]Bold[/B] [I]Italic[/I]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Bold Italic");
+  assert_int_equal(text_tag_list_size(tags), 2);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with link single sequence */
+static void test_featured_text_to_plain_text_link_single(void **state)
+{
+  const char *input = "[link tgt=\"city\" id=1 name=\"TestCity\" /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_int_equal(text_tag_list_size(tags), 1);
+
+  if (text_tag_list_size(tags) > 0) {
+    struct text_tag *tag = text_tag_list_get(tags, 0);
+    assert_int_equal(text_tag_type(tag), TTT_LINK);
+    assert_int_equal(text_tag_link_type(tag), TLT_CITY);
+    assert_int_equal(text_tag_link_id(tag), 1);
+  }
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with unit link */
+static void test_featured_text_to_plain_text_link_unit(void **state)
+{
+  const char *input = "[l tgt=\"unit\" id=5 name=\"Warrior\" /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_int_equal(text_tag_list_size(tags), 1);
+
+  if (text_tag_list_size(tags) > 0) {
+    struct text_tag *tag = text_tag_list_get(tags, 0);
+    assert_int_equal(text_tag_link_type(tag), TLT_UNIT);
+    assert_int_equal(text_tag_link_id(tag), 5);
+  }
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with link pair */
+static void test_featured_text_to_plain_text_link_pair(void **state)
+{
+  const char *input = "[link tgt=\"city\" id=1]Click here[/link]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Click here");
+  assert_int_equal(text_tag_list_size(tags), 1);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_apply_tag() with stop before start */
+static void test_featured_text_apply_tag_stop_before_start(void **state)
+{
+  const char *input = "Hello";
+  char output[64];
+  size_t len;
+
+  (void) state;
+
+  len = featured_text_apply_tag(input, output, sizeof(output), TTT_BOLD, 3, 1);
+  assert_int_equal(len, 0);
+}
+
+/* Test featured_text_apply_tag() with FT_OFFSET_UNSET stop */
+static void test_featured_text_apply_tag_unset_stop(void **state)
+{
+  const char *input = "Hello World";
+  char output[64];
+  size_t len;
+
+  (void) state;
+
+  len = featured_text_apply_tag(input, output, sizeof(output), TTT_BOLD, 0, FT_OFFSET_UNSET);
+  assert_true(len > 0);
+}
+
+/* Test featured_text_apply_tag() with TTT_COLOR no colors */
+static void test_featured_text_apply_tag_color_none(void **state)
+{
+  const char *input = "Hello";
+  char output[64];
+  struct ft_color color = FT_COLOR(NULL, NULL);
+  size_t len;
+
+  (void) state;
+
+  len = featured_text_apply_tag(input, output, sizeof(output), TTT_COLOR, 0, 5, color);
+  assert_int_equal(len, 0);
+}
+
+/* Test featured_text_apply_tag() with TTT_LINK city null */
+static void test_featured_text_apply_tag_link_city_null(void **state)
+{
+  const char *input = "Hello";
+  char output[64];
+  size_t len;
+
+  (void) state;
+
+  len = featured_text_apply_tag(input, output, sizeof(output), TTT_LINK, 0, 5, TLT_CITY, NULL);
+  assert_int_equal(len, 0);
+}
+
+/* Test featured_text_apply_tag() with TTT_LINK tile null */
+static void test_featured_text_apply_tag_link_tile_null(void **state)
+{
+  const char *input = "Hello";
+  char output[64];
+  size_t len;
+
+  (void) state;
+
+  len = featured_text_apply_tag(input, output, sizeof(output), TTT_LINK, 0, 5, TLT_TILE, NULL);
+  assert_int_equal(len, 0);
+}
+
+/* Test featured_text_apply_tag() with TTT_LINK unit null */
+static void test_featured_text_apply_tag_link_unit_null(void **state)
+{
+  const char *input = "Hello";
+  char output[64];
+  size_t len;
+
+  (void) state;
+
+  len = featured_text_apply_tag(input, output, sizeof(output), TTT_LINK, 0, 5, TLT_UNIT, NULL);
+  assert_int_equal(len, 0);
+}
+
+/* Test text_tag_list operations */
+static void test_text_tag_list_basic(void **state)
+{
+  struct text_tag_list *list;
+
+  (void) state;
+
+  list = text_tag_list_new();
+  assert_non_null(list);
+  assert_int_equal(text_tag_list_size(list), 0);
+
+  text_tag_list_destroy(list);
+}
+
+/* Test text_tag_list_append */
+static void test_text_tag_list_append(void **state)
+{
+  struct text_tag_list *list;
+  struct text_tag *tag1, *tag2;
+
+  (void) state;
+
+  list = text_tag_list_new();
+  assert_non_null(list);
+
+  tag1 = text_tag_new(TTT_BOLD, 0, 5);
+  tag2 = text_tag_new(TTT_ITALIC, 10, 15);
+
+  text_tag_list_append(list, tag1);
+  assert_int_equal(text_tag_list_size(list), 1);
+
+  text_tag_list_append(list, tag2);
+  assert_int_equal(text_tag_list_size(list), 2);
+
+  text_tag_list_destroy(list);
+}
+
+/* Test text_tag_list_copy */
+static void test_text_tag_list_copy(void **state)
+{
+  struct text_tag_list *list, *copy;
+  struct text_tag *tag;
+
+  (void) state;
+
+  list = text_tag_list_new();
+  tag = text_tag_new(TTT_BOLD, 0, 5);
+  text_tag_list_append(list, tag);
+
+  copy = text_tag_list_copy(list);
+  assert_non_null(copy);
+  assert_int_equal(text_tag_list_size(copy), 1);
+  assert_ptr_not_equal(list, copy);
+
+  text_tag_list_destroy(list);
+  text_tag_list_destroy(copy);
+}
+
+/* Test predefined color ftc_any */
+static void test_predefined_color_any(void **state)
+{
+  (void) state;
+
+  assert_null(ftc_any.foreground);
+  assert_null(ftc_any.background);
+}
+
+/* Test predefined color ftc_log */
+static void test_predefined_color_log(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_log.foreground, "#7F7F7F");
+  assert_null(ftc_log.background);
+}
+
+/* Test predefined color ftc_client */
+static void test_predefined_color_client(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_client.foreground, "#EF7F00");
+  assert_null(ftc_client.background);
+}
+
+/* Test predefined color ftc_editor */
+static void test_predefined_color_editor(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_editor.foreground, "#0000FF");
+  assert_null(ftc_editor.background);
+}
+
+/* Test predefined color ftc_command */
+static void test_predefined_color_command(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_command.foreground, "#006400");
+  assert_null(ftc_command.background);
+}
+
+/* Test predefined color ftc_changed */
+static void test_predefined_color_changed(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_changed.foreground, "#FF0000");
+  assert_null(ftc_changed.background);
+}
+
+/* Test predefined color ftc_server_prompt */
+static void test_predefined_color_server_prompt(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_server_prompt.foreground, "#FF0000");
+  assert_string_equal(ftc_server_prompt.background, "#BEBEBE");
+}
+
+/* Test predefined color ftc_player_lost */
+static void test_predefined_color_player_lost(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_player_lost.foreground, "#FFFFFF");
+  assert_string_equal(ftc_player_lost.background, "#000000");
+}
+
+/* Test predefined color ftc_game_start */
+static void test_predefined_color_game_start(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_game_start.foreground, "#00FF00");
+  assert_string_equal(ftc_game_start.background, "#115511");
+}
+
+/* Test predefined color ftc_chat_ally */
+static void test_predefined_color_chat_ally(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_chat_ally.foreground, "#551166");
+  assert_null(ftc_chat_ally.background);
+}
+
+/* Test predefined color ftc_chat_private */
+static void test_predefined_color_chat_private(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_chat_private.foreground, "#A020F0");
+  assert_null(ftc_chat_private.background);
+}
+
+/* Test predefined color ftc_chat_luaconsole */
+static void test_predefined_color_chat_luaconsole(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_chat_luaconsole.foreground, "#006400");
+  assert_null(ftc_chat_luaconsole.background);
+}
+
+/* Test predefined color ftc_vote_public */
+static void test_predefined_color_vote_public(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_vote_public.foreground, "#FFFFFF");
+  assert_string_equal(ftc_vote_public.background, "#AA0000");
+}
+
+/* Test predefined color ftc_vote_team */
+static void test_predefined_color_vote_team(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_vote_team.foreground, "#FFFFFF");
+  assert_string_equal(ftc_vote_team.background, "#5555CC");
+}
+
+/* Test predefined color ftc_vote_passed */
+static void test_predefined_color_vote_passed(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_vote_passed.foreground, "#006400");
+  assert_string_equal(ftc_vote_passed.background, "#AAFFAA");
+}
+
+/* Test predefined color ftc_vote_failed */
+static void test_predefined_color_vote_failed(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_vote_failed.foreground, "#8B0000");
+  assert_string_equal(ftc_vote_failed.background, "#FFAAAA");
+}
+
+/* Test predefined color ftc_vote_yes */
+static void test_predefined_color_vote_yes(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_vote_yes.foreground, "#000000");
+  assert_string_equal(ftc_vote_yes.background, "#C8FFD5");
+}
+
+/* Test predefined color ftc_vote_no */
+static void test_predefined_color_vote_no(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_vote_no.foreground, "#000000");
+  assert_string_equal(ftc_vote_no.background, "#FFD2D2");
+}
+
+/* Test predefined color ftc_vote_abstain */
+static void test_predefined_color_vote_abstain(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_vote_abstain.foreground, "#000000");
+  assert_string_equal(ftc_vote_abstain.background, "#E8E8E8");
+}
+
+/* Test predefined color ftc_luaconsole_input */
+static void test_predefined_color_luaconsole_input(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_luaconsole_input.foreground, "#2B008B");
+  assert_null(ftc_luaconsole_input.background);
+}
+
+/* Test predefined color ftc_luaconsole_error */
+static void test_predefined_color_luaconsole_error(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_luaconsole_error.foreground, "#FF0000");
+  assert_null(ftc_luaconsole_error.background);
+}
+
+/* Test predefined color ftc_luaconsole_warn */
+static void test_predefined_color_luaconsole_warn(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_luaconsole_warn.foreground, "#CF2020");
+  assert_null(ftc_luaconsole_warn.background);
+}
+
+/* Test predefined color ftc_luaconsole_normal */
+static void test_predefined_color_luaconsole_normal(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_luaconsole_normal.foreground, "#006400");
+  assert_null(ftc_luaconsole_normal.background);
+}
+
+/* Test predefined color ftc_luaconsole_verbose */
+static void test_predefined_color_luaconsole_verbose(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_luaconsole_verbose.foreground, "#B8B8B8");
+  assert_null(ftc_luaconsole_verbose.background);
+}
+
+/* Test predefined color ftc_luaconsole_debug */
+static void test_predefined_color_luaconsole_debug(void **state)
+{
+  (void) state;
+
+  assert_string_equal(ftc_luaconsole_debug.foreground, "#B87676");
+  assert_null(ftc_luaconsole_debug.background);
+}
+
 int main(void)
 {
   const struct CMUnitTest tests[] = {
@@ -732,6 +1296,60 @@ int main(void)
     cmocka_unit_test(test_predefined_color_warning),
     cmocka_unit_test(test_predefined_color_server),
     cmocka_unit_test(test_predefined_color_chat_public),
+
+    /* Additional featured_text_to_plain_text tests */
+    cmocka_unit_test(test_featured_text_to_plain_text_strike),
+    cmocka_unit_test(test_featured_text_to_plain_text_underline),
+    cmocka_unit_test(test_featured_text_to_plain_text_color_bg),
+    cmocka_unit_test(test_featured_text_to_plain_text_multiple),
+    cmocka_unit_test(test_featured_text_to_plain_text_nested),
+    cmocka_unit_test(test_featured_text_to_plain_text_unclosed),
+    cmocka_unit_test(test_featured_text_to_plain_text_full_names),
+    cmocka_unit_test(test_featured_text_to_plain_text_empty),
+    cmocka_unit_test(test_featured_text_to_plain_text_case_insensitive),
+    cmocka_unit_test(test_featured_text_to_plain_text_link_single),
+    cmocka_unit_test(test_featured_text_to_plain_text_link_unit),
+    cmocka_unit_test(test_featured_text_to_plain_text_link_pair),
+
+    /* Additional featured_text_apply_tag tests */
+    cmocka_unit_test(test_featured_text_apply_tag_stop_before_start),
+    cmocka_unit_test(test_featured_text_apply_tag_unset_stop),
+    cmocka_unit_test(test_featured_text_apply_tag_color_none),
+    cmocka_unit_test(test_featured_text_apply_tag_link_city_null),
+    cmocka_unit_test(test_featured_text_apply_tag_link_tile_null),
+    cmocka_unit_test(test_featured_text_apply_tag_link_unit_null),
+
+    /* text_tag_list tests */
+    cmocka_unit_test(test_text_tag_list_basic),
+    cmocka_unit_test(test_text_tag_list_append),
+    cmocka_unit_test(test_text_tag_list_copy),
+
+    /* More predefined colors tests */
+    cmocka_unit_test(test_predefined_color_any),
+    cmocka_unit_test(test_predefined_color_log),
+    cmocka_unit_test(test_predefined_color_client),
+    cmocka_unit_test(test_predefined_color_editor),
+    cmocka_unit_test(test_predefined_color_command),
+    cmocka_unit_test(test_predefined_color_changed),
+    cmocka_unit_test(test_predefined_color_server_prompt),
+    cmocka_unit_test(test_predefined_color_player_lost),
+    cmocka_unit_test(test_predefined_color_game_start),
+    cmocka_unit_test(test_predefined_color_chat_ally),
+    cmocka_unit_test(test_predefined_color_chat_private),
+    cmocka_unit_test(test_predefined_color_chat_luaconsole),
+    cmocka_unit_test(test_predefined_color_vote_public),
+    cmocka_unit_test(test_predefined_color_vote_team),
+    cmocka_unit_test(test_predefined_color_vote_passed),
+    cmocka_unit_test(test_predefined_color_vote_failed),
+    cmocka_unit_test(test_predefined_color_vote_yes),
+    cmocka_unit_test(test_predefined_color_vote_no),
+    cmocka_unit_test(test_predefined_color_vote_abstain),
+    cmocka_unit_test(test_predefined_color_luaconsole_input),
+    cmocka_unit_test(test_predefined_color_luaconsole_error),
+    cmocka_unit_test(test_predefined_color_luaconsole_warn),
+    cmocka_unit_test(test_predefined_color_luaconsole_normal),
+    cmocka_unit_test(test_predefined_color_luaconsole_verbose),
+    cmocka_unit_test(test_predefined_color_luaconsole_debug),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

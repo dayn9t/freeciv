@@ -508,12 +508,16 @@ static void test_req_text_insert_min_veteran(void **state)
                                  &req, VERB_DEFAULT, ""));
 }
 
+/* Test req_text_insert with MINHP requirement */
+static void test_req_text_insert_min_hp(void **state)
 {
     (void) state;
     char buf[256];
     struct requirement req;
 
-    req.source.value.mincities = 10;
+    /* Create a MINHP requirement */
+    req.source.kind = VUT_MINHP;
+    req.source.value.min_hit_points = 50;
     req.range = REQ_RANGE_LOCAL;
     req.survives = false;
     req.present = true;
@@ -663,12 +667,15 @@ static void test_req_text_insert_city_status(void **state)
     req_text_insert(buf, sizeof(buf), nullptr, &req, VERB_DEFAULT, "");
 }
 
+/* Test req_text_insert with MINLATITUDE requirement */
 static void test_req_text_insert_min_latitude(void **state)
 {
     (void) state;
     char buf[256];
     struct requirement req;
 
+    /* Create a MINLATITUDE requirement */
+    req.source.kind = VUT_MINLATITUDE;
     req.source.value.latitude = 30;
     req.range = REQ_RANGE_TILE;
     req.survives = false;
@@ -683,12 +690,15 @@ static void test_req_text_insert_min_latitude(void **state)
                                  &req, VERB_DEFAULT, ""));
 }
 
+/* Test req_text_insert with MAXLATITUDE requirement */
 static void test_req_text_insert_max_latitude(void **state)
 {
     (void) state;
     char buf[256];
     struct requirement req;
 
+    /* Create a MAXLATITUDE requirement */
+    req.source.kind = VUT_MAXLATITUDE;
     req.source.value.latitude = 70;
     req.range = REQ_RANGE_TILE;
     req.survives = false;
@@ -822,6 +832,7 @@ int main(void)
                                         setup_reqtext, teardown_reqtext),
         cmocka_unit_test_setup_teardown(test_req_text_insert_min_veteran,
                                         setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_hp,
                                         setup_reqtext, teardown_reqtext),
         cmocka_unit_test_setup_teardown(test_req_text_insert_age,
                                         setup_reqtext, teardown_reqtext),

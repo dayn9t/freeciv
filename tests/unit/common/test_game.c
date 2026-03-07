@@ -27,6 +27,7 @@
 #include "support.h"
 
 /* common */
+#include "fc_interface.h"
 #include "game.h"
 #include "idex.h"
 #include "world_object.h"
@@ -856,6 +857,658 @@ static void test_calendar_defaults(void **state)
   assert_int_equal(game.calendar.calendar_fragments, 0);
 }
 
+/***********************************************************************
+  Test game_init lifecycle
+***********************************************************************/
+static int test_game_lifecycle_setup(void **state)
+{
+  (void) state;
+
+  /* Set to server mode for game_init */
+  i_am_server();
+
+  /* Clear game state before test */
+  memset(&game, 0, sizeof(game));
+  memset(&wld, 0, sizeof(wld));
+
+  return 0;
+}
+
+static int test_game_lifecycle_teardown(void **state)
+{
+  (void) state;
+
+  /* Clean up after test */
+  memset(&game, 0, sizeof(game));
+  memset(&wld, 0, sizeof(wld));
+
+  return 0;
+}
+
+static void test_game_init_basic(void **state)
+{
+  (void) state;
+
+  /* Initialize game */
+  game_init(FALSE);
+
+  /* Verify basic initialization */
+  assert_int_equal(game.info.gold, GAME_DEFAULT_GOLD);
+  assert_int_equal(game.info.turn, 0);
+  assert_int_equal(game.info.year, GAME_DEFAULT_START_YEAR);
+  assert_int_equal(game.info.foodbox, GAME_DEFAULT_FOODBOX);
+  assert_int_equal(game.info.shieldbox, GAME_DEFAULT_SHIELDBOX);
+  assert_int_equal(game.info.sciencebox, GAME_DEFAULT_SCIENCEBOX);
+  assert_int_equal(game.info.citymindist, GAME_DEFAULT_CITYMINDIST);
+
+  /* Clean up */
+  game_free();
+}
+
+static void test_game_init_control_defaults(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Verify control defaults */
+  assert_int_equal(game.control.government_count, 0);
+  assert_int_equal(game.control.nation_count, 0);
+  assert_int_equal(game.control.num_base_types, 0);
+  assert_int_equal(game.control.num_road_types, 0);
+  assert_int_equal(game.control.num_resource_types, 0);
+  assert_int_equal(game.control.num_impr_types, 0);
+  assert_int_equal(game.control.num_specialist_types, 0);
+  assert_int_equal(game.control.num_tech_types, 0);
+  assert_int_equal(game.control.num_unit_classes, 0);
+  assert_int_equal(game.control.num_unit_types, 0);
+  assert_int_equal(game.control.num_disaster_types, 0);
+  assert_int_equal(game.control.num_achievement_types, 0);
+  assert_int_equal(game.control.num_styles, 0);
+  assert_int_equal(game.control.num_music_styles, 0);
+  assert_int_equal(game.control.num_nation_groups, 0);
+  assert_int_equal(game.control.num_nation_sets, 0);
+  assert_int_equal(game.control.num_city_styles, 0);
+  assert_int_equal(game.control.terrain_count, 0);
+
+  game_free();
+}
+
+static void test_game_init_scenario_defaults(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Verify scenario defaults */
+  assert_false(game.scenario.is_scenario);
+  assert_true(game.scenario.players);
+  assert_false(game.scenario.startpos_nations);
+  assert_false(game.scenario.handmade);
+  assert_false(game.scenario.prevent_new_cities);
+  assert_true(game.scenario.lake_flooding);
+  assert_true(game.scenario.have_resources);
+  assert_true(game.scenario.ruleset_locked);
+  assert_false(game.scenario.save_random);
+  assert_false(game.scenario.allow_ai_type_fallback);
+
+  game_free();
+}
+
+static void test_game_init_info_defaults(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Verify game info defaults */
+  assert_true(game.info.is_new_game);
+  assert_false(game.info.is_edit_mode);
+  assert_int_equal(game.info.aifill, GAME_DEFAULT_AIFILL);
+  assert_int_equal(game.info.skill_level, GAME_DEFAULT_SKILL_LEVEL);
+  assert_int_equal(game.info.borders, GAME_DEFAULT_BORDERS);
+  assert_int_equal(game.info.diplomacy, GAME_DEFAULT_DIPLOMACY);
+  assert_true(game.info.fogofwar == GAME_DEFAULT_FOGOFWAR);
+  assert_int_equal(game.info.timeout, GAME_DEFAULT_TIMEOUT);
+
+  game_free();
+}
+
+static void test_game_init_trading_defaults(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Verify trading defaults */
+  assert_true(game.info.trading_tech == GAME_DEFAULT_TRADING_TECH);
+  assert_true(game.info.trading_gold == GAME_DEFAULT_TRADING_GOLD);
+  assert_true(game.info.trading_city == GAME_DEFAULT_TRADING_CITY);
+  assert_int_equal(game.info.trademindist, GAME_DEFAULT_TRADEMINDIST);
+
+  game_free();
+}
+
+static void test_game_init_warming_defaults(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Verify warming/winter defaults */
+  assert_true(game.info.global_warming == GAME_DEFAULT_GLOBAL_WARMING);
+  assert_true(game.info.nuclear_winter == GAME_DEFAULT_NUCLEAR_WINTER);
+
+  game_free();
+}
+
+static void test_game_free_after_init(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Free should not crash after init */
+  game_free();
+
+  /* Test passes if no crash occurs */
+}
+
+static void test_game_free_multiple(void **state)
+{
+  (void) state;
+
+  /* Multiple init/free cycles should be safe */
+  game_init(FALSE);
+  game_free();
+
+  game_init(FALSE);
+  game_free();
+
+  /* Test passes if no crash */
+}
+
+static void test_game_reset_after_init(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Modify some values */
+  game.info.turn = 100;
+  game.info.gold = 1000;
+  game.info.year = 1000;
+
+  /* Reset should restore defaults */
+  game_reset();
+
+  /* After reset, values should be back to defaults */
+  assert_int_equal(game.info.gold, GAME_DEFAULT_GOLD);
+  assert_int_equal(game.info.turn, 0);
+  assert_int_equal(game.info.year, GAME_DEFAULT_START_YEAR);
+
+  /* Clean up */
+  game_free();
+}
+
+static void test_game_reset_state(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Set various game states */
+  game.info.is_new_game = FALSE;
+  game.info.is_edit_mode = TRUE;
+  game.info.globalwarming = 50;
+  game.info.heating = 25;
+  game.info.nuclearwinter = 30;
+  game.info.cooling = 15;
+
+  /* Reset */
+  game_reset();
+
+  /* Verify state is reset */
+  assert_true(game.info.is_new_game);
+  assert_false(game.info.is_edit_mode);
+
+  /* Clean up */
+  game_free();
+}
+
+/***********************************************************************
+  Test population_to_text - skipped due to locale initialization requirement
+  Note: population_to_text requires locale/charset initialization which
+  is not available in the unit test context. This test is disabled.
+***********************************************************************/
+
+/***********************************************************************
+  Test game_city_by_name
+***********************************************************************/
+static void test_game_city_by_name_not_found(void **state)
+{
+  struct city *result;
+
+  (void) state;
+
+  game_init(FALSE);
+
+  result = game_city_by_name("NonexistentCity");
+
+  assert_null(result);
+
+  game_free();
+}
+
+static void test_game_city_by_name_empty(void **state)
+{
+  struct city *result;
+
+  (void) state;
+
+  game_init(FALSE);
+
+  result = game_city_by_name("");
+
+  assert_null(result);
+
+  game_free();
+}
+
+/***********************************************************************
+  Test game server mode initialization
+***********************************************************************/
+static void test_game_init_server_mode(void **state)
+{
+  (void) state;
+
+  i_am_server();
+  game_init(FALSE);
+
+  /* Server-specific initialization should have occurred */
+  assert_true(is_server());
+
+  game_free();
+}
+
+static void test_game_init_client_mode(void **state)
+{
+  (void) state;
+
+  i_am_client();
+  game_init(FALSE);
+
+  /* Client mode initialization */
+  assert_false(is_server());
+
+  game_free();
+}
+
+/***********************************************************************
+  Test game.callbacks
+***********************************************************************/
+static void test_game_callbacks_init_null(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Callbacks should be initialized to NULL/0 */
+  assert_null(game.callbacks.unit_deallocate);
+
+  game_free();
+}
+
+/***********************************************************************
+  Test game.ruleset fields
+***********************************************************************/
+static void test_game_ruleset_fields_init(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Ruleset fields should be NULL after init */
+  assert_null(game.ruleset_summary);
+  assert_null(game.ruleset_description);
+  assert_null(game.ruleset_capabilities);
+
+  game_free();
+}
+
+/***********************************************************************
+  Test lua_timeout
+***********************************************************************/
+static void test_game_lua_timeout_default(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  assert_int_equal(game.lua_timeout, GAME_DEFAULT_LUA_TIMEOUT);
+
+  game_free();
+}
+
+static void test_game_lua_timeout_set(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Set and verify */
+  game.lua_timeout = 10;
+  assert_int_equal(game.lua_timeout, 10);
+
+  game.lua_timeout = 30;
+  assert_int_equal(game.lua_timeout, 30);
+
+  game_free();
+}
+
+/***********************************************************************
+  Test game.veteran initialization
+***********************************************************************/
+static void test_game_veteran_init(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Veteran system should be NULL after init */
+  assert_null(game.veteran);
+
+  game_free();
+}
+
+/***********************************************************************
+  Test game.plr_bg_color initialization
+***********************************************************************/
+static void test_game_plr_bg_color_init(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Background color should be NULL after init */
+  assert_null(game.plr_bg_color);
+
+  game_free();
+}
+
+/***********************************************************************
+  Test game.rgame initialization
+***********************************************************************/
+static void test_game_rgame_init(void **state)
+{
+  (void) state;
+
+  game_init(FALSE);
+
+  /* Global init techs and buildings should be cleared */
+  assert_int_equal(game.rgame.global_init_techs[0], 0);
+  assert_int_equal(game.rgame.global_init_buildings[0], 0);
+
+  game_free();
+}
+
+/***********************************************************************
+  Test generate_save_name with year
+***********************************************************************/
+static void test_generate_save_name_year_negative(void **state)
+{
+  (void) state;
+
+  char buf[256];
+  int result;
+
+  setup_game_defaults();
+  game.info.turn = 1;
+  game.info.year = -4000;
+  fc_strlcpy(game.calendar.negative_year_label, "BC",
+             sizeof(game.calendar.negative_year_label));
+  fc_strlcpy(game.calendar.positive_year_label, "AD",
+             sizeof(game.calendar.positive_year_label));
+
+  result = generate_save_name("save-%Y", buf, sizeof(buf), "test");
+
+  assert_true(result > 0);
+}
+
+static void test_generate_save_name_year_positive(void **state)
+{
+  (void) state;
+
+  char buf[256];
+  int result;
+
+  setup_game_defaults();
+  game.info.turn = 100;
+  game.info.year = 2000;
+  fc_strlcpy(game.calendar.negative_year_label, "BC",
+             sizeof(game.calendar.negative_year_label));
+  fc_strlcpy(game.calendar.positive_year_label, "AD",
+             sizeof(game.calendar.positive_year_label));
+
+  result = generate_save_name("save-%Y", buf, sizeof(buf), "test");
+
+  assert_true(result > 0);
+}
+
+static void test_generate_save_name_suffix(void **state)
+{
+  (void) state;
+
+  char buf[256];
+  int result;
+
+  setup_game_defaults();
+  game.info.turn = 50;
+  game.info.year = 1000;
+  fc_strlcpy(game.calendar.negative_year_label, "BC",
+             sizeof(game.calendar.negative_year_label));
+  fc_strlcpy(game.calendar.positive_year_label, "AD",
+             sizeof(game.calendar.positive_year_label));
+
+  result = generate_save_name("game-%S", buf, sizeof(buf), "auto");
+
+  assert_true(result > 0);
+  /* Should contain AD for positive year */
+  assert_true(strstr(buf, "AD") != NULL);
+}
+
+/***********************************************************************
+  Test game.info various fields
+***********************************************************************/
+static void test_game_info_infra(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  assert_int_equal(game.info.infrapoints, GAME_DEFAULT_INFRA);
+
+  game.info.infrapoints = 100;
+  assert_int_equal(game.info.infrapoints, 100);
+
+  game.info.infrapoints = 50000;  /* Max */
+  assert_int_equal(game.info.infrapoints, 50000);
+}
+
+static void test_game_scenario_name(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Scenario name should be empty initially */
+  game.scenario.name[0] = '\0';
+  assert_int_equal(game.scenario.name[0], '\0');
+
+  /* Set a scenario name */
+  fc_strlcpy(game.scenario.name, "TestScenario", sizeof(game.scenario.name));
+  assert_string_equal(game.scenario.name, "TestScenario");
+}
+
+static void test_game_scenario_authors(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Scenario authors should be empty initially */
+  game.scenario.authors[0] = '\0';
+  assert_int_equal(game.scenario.authors[0], '\0');
+
+  /* Set authors */
+  fc_strlcpy(game.scenario.authors, "Test Author", sizeof(game.scenario.authors));
+  assert_string_equal(game.scenario.authors, "Test Author");
+}
+
+static void test_game_scenario_flags(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Test scenario flags */
+  game.scenario.is_scenario = TRUE;
+  assert_true(game.scenario.is_scenario);
+
+  game.scenario.handmade = TRUE;
+  assert_true(game.scenario.handmade);
+
+  game.scenario.prevent_new_cities = TRUE;
+  assert_true(game.scenario.prevent_new_cities);
+
+  game.scenario.save_random = TRUE;
+  assert_true(game.scenario.save_random);
+
+  game.scenario.allow_ai_type_fallback = TRUE;
+  assert_true(game.scenario.allow_ai_type_fallback);
+}
+
+static void test_game_calendar_labels(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Set year labels */
+  fc_strlcpy(game.calendar.negative_year_label, "BC",
+             sizeof(game.calendar.negative_year_label));
+  fc_strlcpy(game.calendar.positive_year_label, "AD",
+             sizeof(game.calendar.positive_year_label));
+
+  assert_string_equal(game.calendar.negative_year_label, "BC");
+  assert_string_equal(game.calendar.positive_year_label, "AD");
+}
+
+static void test_game_calendar_fragments(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Test calendar fragments */
+  game.calendar.calendar_fragments = 12;
+  assert_int_equal(game.calendar.calendar_fragments, 12);
+
+  game.calendar.calendar_skip_0 = TRUE;
+  assert_true(game.calendar.calendar_skip_0);
+}
+
+static void test_game_info_phase_values(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Test setting various phase values */
+  game.info.phase = 0;
+  assert_int_equal(game.info.phase, 0);
+
+  game.info.phase = 1;
+  assert_int_equal(game.info.phase, 1);
+
+  game.info.phase = 10;
+  assert_int_equal(game.info.phase, 10);
+
+  game.info.phase = 127;  /* Max player count */
+  assert_int_equal(game.info.phase, 127);
+}
+
+static void test_game_info_year_negative(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Test negative years (BC) */
+  game.info.year = -4000;
+  assert_int_equal(game.info.year, -4000);
+
+  game.info.year = -1;
+  assert_int_equal(game.info.year, -1);
+}
+
+static void test_game_info_year_positive(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Test positive years (AD) */
+  game.info.year = 1;
+  assert_int_equal(game.info.year, 1);
+
+  game.info.year = 2000;
+  assert_int_equal(game.info.year, 2000);
+}
+
+static void test_game_info_year_zero(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Test year zero */
+  game.info.year = 0;
+  assert_int_equal(game.info.year, 0);
+}
+
+static void test_game_info_counters(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Test global advance count */
+  game.info.global_advance_count = 0;
+  assert_int_equal(game.info.global_advance_count, 0);
+
+  game.info.global_advance_count = 50;
+  assert_int_equal(game.info.global_advance_count, 50);
+}
+
+static void test_game_info_warming_counters(void **state)
+{
+  (void) state;
+
+  setup_game_defaults();
+
+  /* Test warming/winter counters */
+  game.info.globalwarming = 100;
+  game.info.heating = 50;
+  game.info.nuclearwinter = 75;
+  game.info.cooling = 25;
+
+  assert_int_equal(game.info.globalwarming, 100);
+  assert_int_equal(game.info.heating, 50);
+  assert_int_equal(game.info.nuclearwinter, 75);
+  assert_int_equal(game.info.cooling, 25);
+}
+
 int main(void)
 {
   const struct CMUnitTest tests[] = {
@@ -915,10 +1568,17 @@ int main(void)
     cmocka_unit_test(test_generate_save_name_basic),
     cmocka_unit_test(test_generate_save_name_with_format),
     cmocka_unit_test(test_generate_save_name_null_reason),
+    cmocka_unit_test(test_generate_save_name_year_negative),
+    cmocka_unit_test(test_generate_save_name_year_positive),
+    cmocka_unit_test(test_generate_save_name_suffix),
 
     /* City/unit lookup tests */
     cmocka_unit_test(test_game_city_by_number_not_found),
     cmocka_unit_test(test_game_unit_by_number_not_found),
+
+    /* game_city_by_name tests */
+    cmocka_unit_test(test_game_city_by_name_not_found),
+    cmocka_unit_test(test_game_city_by_name_empty),
 
     /* Game constants tests */
     cmocka_unit_test(test_game_constants_gold),
@@ -947,6 +1607,99 @@ int main(void)
 
     /* Calendar defaults tests */
     cmocka_unit_test(test_calendar_defaults),
+
+    /* Game init lifecycle tests */
+    cmocka_unit_test_setup_teardown(test_game_init_basic,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_game_init_control_defaults,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_game_init_scenario_defaults,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_game_init_info_defaults,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_game_init_trading_defaults,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_game_init_warming_defaults,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+
+    /* Game free lifecycle tests */
+    cmocka_unit_test_setup_teardown(test_game_free_after_init,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_game_free_multiple,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+
+    /* Game reset lifecycle tests */
+    cmocka_unit_test_setup_teardown(test_game_reset_after_init,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_game_reset_state,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+
+    /* population_to_text tests - disabled due to locale initialization requirement */
+
+    /* Server/client mode tests */
+    cmocka_unit_test_setup_teardown(test_game_init_server_mode,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_game_init_client_mode,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+
+    /* Game callbacks tests */
+    cmocka_unit_test_setup_teardown(test_game_callbacks_init_null,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+
+    /* Game ruleset fields tests */
+    cmocka_unit_test_setup_teardown(test_game_ruleset_fields_init,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+
+    /* Lua timeout tests */
+    cmocka_unit_test_setup_teardown(test_game_lua_timeout_default,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_game_lua_timeout_set,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+
+    /* Game veteran tests */
+    cmocka_unit_test_setup_teardown(test_game_veteran_init,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+
+    /* Game player background color tests */
+    cmocka_unit_test_setup_teardown(test_game_plr_bg_color_init,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+
+    /* Game rgame tests */
+    cmocka_unit_test_setup_teardown(test_game_rgame_init,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+
+    /* Additional game info tests */
+    cmocka_unit_test(test_game_info_infra),
+    cmocka_unit_test(test_game_scenario_name),
+    cmocka_unit_test(test_game_scenario_authors),
+    cmocka_unit_test(test_game_scenario_flags),
+    cmocka_unit_test(test_game_calendar_labels),
+    cmocka_unit_test(test_game_calendar_fragments),
+    cmocka_unit_test(test_game_info_phase_values),
+    cmocka_unit_test(test_game_info_year_negative),
+    cmocka_unit_test(test_game_info_year_positive),
+    cmocka_unit_test(test_game_info_year_zero),
+    cmocka_unit_test(test_game_info_counters),
+    cmocka_unit_test(test_game_info_warming_counters),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

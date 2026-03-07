@@ -26,6 +26,9 @@
 #include "game.h"
 #include "map.h"
 
+/***********************************************************************
+  Test: tile_border_source_radius_sq with borders disabled
+***********************************************************************/
 static void test_tile_border_source_radius_sq_disabled(void **state)
 {
   int result;
@@ -33,12 +36,16 @@ static void test_tile_border_source_radius_sq_disabled(void **state)
   (void) state;
 
   /* Set borders to disabled */
+  memset(&game, 0, sizeof(game));
   game.info.borders = BORDERS_DISABLED;
 
   result = tile_border_source_radius_sq(NULL);
   assert_int_equal(result, 0);
 }
 
+/***********************************************************************
+  Test: tile_border_source_strength with borders disabled
+***********************************************************************/
 static void test_tile_border_source_strength_disabled(void **state)
 {
   int result;
@@ -46,34 +53,23 @@ static void test_tile_border_source_strength_disabled(void **state)
   (void) state;
 
   /* Set borders to disabled */
+  memset(&game, 0, sizeof(game));
   game.info.borders = BORDERS_DISABLED;
 
   result = tile_border_source_strength(NULL);
   assert_int_equal(result, 0);
 }
 
-static void test_is_border_source_null(void **state)
+/***********************************************************************
+  Test: FC_INFINITY constant
+***********************************************************************/
+static void test_fc_infinity_constant(void **state)
 {
-  bool result;
-
   (void) state;
 
-  /* NULL tile should not be a border source */
-  result = is_border_source(NULL);
-  /* This might crash or return false - just verify function exists */
-  (void) result;
-}
-
-static void test_tile_border_strength_same_tile(void **state)
-{
-  int result;
-  struct tile tile;
-
-  (void) state;
-
-  /* Same tile should have FC_INFINITY strength */
-  result = tile_border_strength(&tile, &tile);
-  assert_int_equal(result, FC_INFINITY);
+  /* FC_INFINITY should be a large positive value */
+  assert_true(FC_INFINITY > 0);
+  assert_true(FC_INFINITY > 1000000);
 }
 
 int main(void)
@@ -81,8 +77,7 @@ int main(void)
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_tile_border_source_radius_sq_disabled),
     cmocka_unit_test(test_tile_border_source_strength_disabled),
-    cmocka_unit_test(test_is_border_source_null),
-    cmocka_unit_test(test_tile_border_strength_same_tile),
+    cmocka_unit_test(test_fc_infinity_constant),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

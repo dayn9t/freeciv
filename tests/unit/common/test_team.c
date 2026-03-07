@@ -136,16 +136,21 @@ static void test_team_slot_is_used(void **state)
 }
 
 /***********************************************************************
-  Test: team_slot_rule_name with null slot
+  Test: team_slot_rule_name returns valid name
 ***********************************************************************/
-static void test_team_slot_rule_name_null(void **state)
+static void test_team_slot_rule_name_valid(void **state)
 {
+  struct team_slot *slot;
   const char *name;
 
   (void) state;
 
-  name = team_slot_rule_name(NULL);
-  assert_null(name);
+  slot = team_slot_by_number(0);
+  if (slot != NULL) {
+    name = team_slot_rule_name(slot);
+    assert_non_null(name);
+    assert_true(strlen(name) > 0);
+  }
 }
 
 /***********************************************************************
@@ -175,42 +180,61 @@ static void test_team_slot_by_rule_name_empty(void **state)
 }
 
 /***********************************************************************
-  Test: team_slot_get_team with null slot
+  Test: team_slot_get_team returns NULL for unused slot
 ***********************************************************************/
-static void test_team_slot_get_team_null(void **state)
+static void test_team_slot_get_team_unused(void **state)
 {
+  struct team_slot *slot;
   struct team *team;
 
   (void) state;
 
-  team = team_slot_get_team(NULL);
-  assert_null(team);
+  slot = team_slot_by_number(0);
+  if (slot != NULL) {
+    team = team_slot_get_team(slot);
+    /* Should be NULL since no team created yet */
+    assert_null(team);
+  }
 }
 
 /***********************************************************************
-  Test: team_members with null team
+  Test: team creation and basic operations
 ***********************************************************************/
-static void test_team_members_null(void **state)
+static void test_team_creation(void **state)
 {
-  const struct player_list *members;
+  struct team_slot *slot;
+  struct team *team;
 
   (void) state;
 
-  members = team_members(NULL);
-  assert_null(members);
-}
+  slot = team_slot_by_number(0);
+  assert_non_null(slot);
 
-/***********************************************************************
-  Test: team_rule_name with null team
-***********************************************************************/
-static void test_team_rule_name_null(void **state)
-{
-  const char *name;
+  /* Create a new team */
+  team = team_new(slot);
+  assert_non_null(team);
 
-  (void) state;
+  /* Check team is now used */
+  assert_true(team_slot_is_used(slot));
 
-  name = team_rule_name(NULL);
-  assert_null(name);
+  /* Check we can get the team from the slot */
+  assert_ptr_equal(team_slot_get_team(slot), team);
+
+  /* Check team members list exists (should be empty) */
+  assert_non_null(team_members(team));
+  assert_int_equal(genlist_size(team_members(team)), 0);
+
+  /* Check team rule name */
+  const char *name = team_rule_name(team);
+  assert_non_null(name);
+
+  /* Check team pretty name */
+  char buf[256];
+  int result = team_pretty_name(team, buf, sizeof(buf));
+  assert_true(result > 0);
+
+  /* Cleanup - remove all players first (none added) */
+  /* Cannot destroy team directly as it requires empty player list */
 }
 
 /***********************************************************************
@@ -245,6 +269,19 @@ static void test_team_slot_iteration(void **state)
   assert_true(count >= 0);
 }
 
+/***********************************************************************
+  Test: team_slot_by_number with out of range index
+***********************************************************************/
+static void test_team_slot_by_number_out_of_range(void **state)
+{
+  struct team_slot *slot;
+
+  (void) state;
+
+  slot = team_slot_by_number(team_slot_count() + 1);
+  assert_null(slot);
+}
+
 int main(void)
 {
   const struct CMUnitTest tests[] = {
@@ -254,14 +291,14 @@ int main(void)
     cmocka_unit_test_setup_teardown(test_team_slot_by_number_negative, setup, teardown),
     cmocka_unit_test_setup_teardown(test_team_slot_index, setup, teardown),
     cmocka_unit_test_setup_teardown(test_team_slot_is_used, setup, teardown),
-    cmocka_unit_test_setup_teardown(test_team_slot_rule_name_null, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_team_slot_rule_name_valid, setup, teardown),
     cmocka_unit_test_setup_teardown(test_team_slot_by_rule_name_null, setup, teardown),
     cmocka_unit_test_setup_teardown(test_team_slot_by_rule_name_empty, setup, teardown),
-    cmocka_unit_test_setup_teardown(test_team_slot_get_team_null, setup, teardown),
-    cmocka_unit_test_setup_teardown(test_team_members_null, setup, teardown),
-    cmocka_unit_test_setup_teardown(test_team_rule_name_null, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_team_slot_get_team_unused, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_team_creation, setup, teardown),
     cmocka_unit_test_setup_teardown(test_team_pretty_name_null, setup, teardown),
     cmocka_unit_test_setup_teardown(test_team_slot_iteration, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_team_slot_by_number_out_of_range, setup, teardown),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

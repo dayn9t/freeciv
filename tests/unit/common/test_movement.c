@@ -769,14 +769,20 @@ static void test_direction_deltas(void **state)
   /* Verify direction deltas are set up for the test map */
   wld.map.num_valid_dirs = 8;
   wld.map.num_cardinal_dirs = 4;
+
+  /* Set up valid directions */
   for (int i = 0; i < 8; i++) {
     wld.map.valid_dirs[i] = i;
-    if (i % 2 == 0) {
-      wld.map.cardinal_dirs[i / 2] = i;
-    }
   }
 
-  /* Cardinal directions: N(0), E(2), S(4), W(6) */
+  /* Cardinal directions: N(1), E(3), S(5), W(7) in specenum
+   * Note: DIR8_NORTHWEST=0, DIR8_NORTH=1, DIR8_NORTHEAST=2, etc. */
+  wld.map.cardinal_dirs[0] = DIR8_NORTH;
+  wld.map.cardinal_dirs[1] = DIR8_EAST;
+  wld.map.cardinal_dirs[2] = DIR8_SOUTH;
+  wld.map.cardinal_dirs[3] = DIR8_WEST;
+
+  /* Verify cardinal directions are correctly set */
   assert_int_equal(wld.map.cardinal_dirs[0], DIR8_NORTH);
   assert_int_equal(wld.map.cardinal_dirs[1], DIR8_EAST);
   assert_int_equal(wld.map.cardinal_dirs[2], DIR8_SOUTH);

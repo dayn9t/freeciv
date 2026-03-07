@@ -82,22 +82,6 @@ static void test_nation_count_uninitialized(void **state)
 }
 
 /***********************************************************************
-  Test nation_by_rule_name with NULL name
-***********************************************************************/
-static void test_nation_by_rule_name_null(void **state)
-{
-  struct nation_type *result;
-
-  (void) state;
-
-  /* Initialize minimal game state */
-  memset(&game, 0, sizeof(game));
-
-  result = nation_by_rule_name(NULL);
-  assert_null(result);
-}
-
-/***********************************************************************
   Test nation_by_rule_name with non-existent name
 ***********************************************************************/
 static void test_nation_by_rule_name_nonexistent(void **state)
@@ -326,28 +310,28 @@ static void test_nation_group_by_number_invalid(void **state)
 }
 
 /***********************************************************************
-  Test nation_set_by_rule_name with NULL
+  Test nation_set_by_rule_name with empty string
 ***********************************************************************/
-static void test_nation_set_by_rule_name_null(void **state)
+static void test_nation_set_by_rule_name_empty(void **state)
 {
   struct nation_set *result;
 
   (void) state;
 
-  result = nation_set_by_rule_name(NULL);
+  result = nation_set_by_rule_name("");
   assert_null(result);
 }
 
 /***********************************************************************
-  Test nation_group_by_rule_name with NULL
+  Test nation_group_by_rule_name with empty string
 ***********************************************************************/
-static void test_nation_group_by_rule_name_null(void **state)
+static void test_nation_group_by_rule_name_empty(void **state)
 {
   struct nation_group *result;
 
   (void) state;
 
-  result = nation_group_by_rule_name(NULL);
+  result = nation_group_by_rule_name("");
   assert_null(result);
 }
 
@@ -358,7 +342,6 @@ int main(void)
     cmocka_unit_test(test_nation_by_number_none),
     cmocka_unit_test(test_nation_by_number_invalid),
     cmocka_unit_test(test_nation_count_uninitialized),
-    cmocka_unit_test(test_nation_by_rule_name_null),
     cmocka_unit_test(test_nation_by_rule_name_nonexistent),
     cmocka_unit_test(test_nation_by_translated_plural_null),
     cmocka_unit_test(test_nation_rule_name_null),
@@ -374,8 +357,8 @@ int main(void)
     cmocka_unit_test(test_nation_group_count),
     cmocka_unit_test(test_nation_set_by_number_invalid),
     cmocka_unit_test(test_nation_group_by_number_invalid),
-    cmocka_unit_test(test_nation_set_by_rule_name_null),
-    cmocka_unit_test(test_nation_group_by_rule_name_null),
+    cmocka_unit_test(test_nation_set_by_rule_name_empty),
+    cmocka_unit_test(test_nation_group_by_rule_name_empty),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

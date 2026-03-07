@@ -66,6 +66,7 @@ test_sources = [
   # Team module tests
   'test_team.c',
   # Reqtext module tests
+  'test_reqtext.c',
   # Multipliers module tests
   'test_multipliers.c',
   # Spaceship module tests
@@ -104,3 +105,14 @@ foreach test_file : test_sources
   )
   test(test_name, test_exe)
 endforeach
+
+# Networking module tests (requires json-protocol/jansson)
+if get_option('json-protocol')
+  test_dataio_json_exe = executable('test_dataio_json',
+    'test_dataio_json.c',
+    include_directories: [common_inc, include_directories('..'), include_directories('../../..')],
+    link_with: [common_lib],
+    dependencies: [cmocka_dep, jansson_dep]
+  )
+  test('test_dataio_json', test_dataio_json_exe)
+endif
