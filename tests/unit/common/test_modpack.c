@@ -23,6 +23,7 @@
 #include <cmocka.h>
 
 /* utility */
+#include "registry.h"
 #include "shared.h"
 
 /* common */
