@@ -44,6 +44,12 @@ test_sources = [
   'test_improvement.c',
   # Government module tests
   'test_government.c',
+  # Extras module tests
+  'test_extras.c',
+  # Road module tests
+  'test_road.c',
+  # Actions module tests
+  'test_actions.c',
 ]
 
 foreach test_file : test_sources
