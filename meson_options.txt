@@ -130,3 +130,13 @@ option('fcdb',
        choices: ['sqlite3','mariadb','odbc'],
        value: ['sqlite3'],
        description: 'fcdb (player authentication) backends to build')
+
+option('tests',
+       type: 'boolean',
+       value: true,
+       description: 'Enable unit tests')
+
+option('coverage',
+       type: 'boolean',
+       value: false,
+       description: 'Enable coverage reporting')

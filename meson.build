@@ -749,7 +749,14 @@ else
     error('Mandatory header zlib.h not found!')
   endif
   icu_dep = dependency('icu-uc')
+  cmocka_dep = dependency('cmocka', required: get_option('tests'))
+  enable_tests = cmocka_dep.found()
   syslua = get_option('syslua')
+
+  if get_option('coverage')
+    add_global_arguments(['--coverage', '-fprofile-arcs', '-ftest-coverage'], language: 'c')
+    add_global_link_arguments(['--coverage', '-fprofile-arcs', '-ftest-coverage'], language: 'c')
+  endif
   if syslua != 'false'
     lua_dep_tmp = dependency('lua-5.5', 'lua-55', 'lua55', 'lua5.5', required:false)
   endif
@@ -4783,3 +4790,5 @@ custom_target('gzip_ChangeLog-1.0-S3_0',
               input: 'ChangeLog-1.0-S3_0',
               install: true,
               install_dir: join_paths(get_option('datadir'), 'doc/freeciv'))
+
+subdir('tests/unit')
