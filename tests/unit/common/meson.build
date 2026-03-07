@@ -23,14 +23,27 @@ test_sources = [
   'test_map.c',
   # Unit module tests
   'test_unit.c',
+  'test_unittype.c',
   # City module tests
   'test_city.c',
   # Player module tests
   'test_player.c',
+  # Nation module tests
+  'test_nation.c',
   # Game module tests
   'test_game.c',
+  # Terrain module tests
+  'test_terrain.c',
   # Combat module tests
   'test_combat.c',
+  # Research module tests
+  'test_research.c',
+  # Tech module tests
+  'test_tech.c',
+  # Improvement module tests
+  'test_improvement.c',
+  # Government module tests
+  'test_government.c',
 ]
 
 foreach test_file : test_sources
