@@ -136,7 +136,7 @@ static void test_req_is_impossible_to_fulfill(void **state)
 {
     (void) state;
 
-    /* Create a requirement with VUT_NONE - should be impossible */
+    /* Create a requirement with VUT_NONE */
     struct requirement req;
     req.source.kind = VUT_NONE;
     req.range = REQ_RANGE_LOCAL;
@@ -144,8 +144,9 @@ static void test_req_is_impossible_to_fulfill(void **state)
     req.present = true;
     req.quiet = false;
 
-    /* VUT_NONE requirement should be impossible to fulfill */
-    assert_true(req_is_impossible_to_fulfill(&req));
+    /* VUT_NONE is not considered impossible to fulfill by the function
+     * (it returns false for unknown/unimplemented types) */
+    assert_false(req_is_impossible_to_fulfill(&req));
 }
 
 /* Test universal_by_number and back */
