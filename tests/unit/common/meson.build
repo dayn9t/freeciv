@@ -20,8 +20,17 @@ test_sources = [
   'test_workertask.c',
   'test_idex.c',
   'test_tile.c',
+  'test_map.c',
+  # Unit module tests
+  'test_unit.c',
   # City module tests
   'test_city.c',
+  # Player module tests
+  'test_player.c',
+  # Game module tests
+  'test_game.c',
+  # Combat module tests
+  'test_combat.c',
 ]
 
 foreach test_file : test_sources
