@@ -86,6 +86,12 @@ test_sources = [
   'test_path_finding.c',
   # Metaknowledge module tests
   'test_metaknowledge.c',
+  # Modpack module tests
+  'test_modpack.c',
+  # Server settings module tests
+  'test_server_settings.c',
+  # Clientutils module tests
+  'test_clientutils.c',
 ]
 
 foreach test_file : test_sources
