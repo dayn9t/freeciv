@@ -15,6 +15,9 @@
 #include <fc_config.h>
 #endif
 
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdbool.h>
 #include <setjmp.h>
 #include <cmocka.h>
 

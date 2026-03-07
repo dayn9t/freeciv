@@ -15,12 +15,16 @@
 #include <fc_config.h>
 #endif
 
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdbool.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
 /* common */
 #include "calendar.h"
 #include "game.h"
+#include "support.h"
 
 static void test_textyear_negative(void **state)
 {
@@ -29,8 +33,8 @@ static void test_textyear_negative(void **state)
   (void) state;
 
   /* Setup game calendar for negative year test */
-  game.calendar.negative_year_label = N_("BC");
-  game.calendar.positive_year_label = N_("AD");
+  fc_snprintf(game.calendar.negative_year_label, sizeof(game.calendar.negative_year_label), "BC");
+  fc_snprintf(game.calendar.positive_year_label, sizeof(game.calendar.positive_year_label), "AD");
 
   result = textyear(-1000);
   assert_non_null(result);
@@ -45,8 +49,8 @@ static void test_textyear_positive(void **state)
 
   (void) state;
 
-  game.calendar.negative_year_label = N_("BC");
-  game.calendar.positive_year_label = N_("AD");
+  fc_snprintf(game.calendar.negative_year_label, sizeof(game.calendar.negative_year_label), "BC");
+  fc_snprintf(game.calendar.positive_year_label, sizeof(game.calendar.positive_year_label), "AD");
 
   result = textyear(1000);
   assert_non_null(result);
@@ -60,8 +64,8 @@ static void test_textyear_zero(void **state)
 
   (void) state;
 
-  game.calendar.negative_year_label = N_("BC");
-  game.calendar.positive_year_label = N_("AD");
+  fc_snprintf(game.calendar.negative_year_label, sizeof(game.calendar.negative_year_label), "BC");
+  fc_snprintf(game.calendar.positive_year_label, sizeof(game.calendar.positive_year_label), "AD");
 
   /* Year 0 should be handled as positive (0 AD) */
   result = textyear(0);
@@ -107,8 +111,8 @@ static void test_calendar_text_no_fragments(void **state)
   (void) state;
 
   game.calendar.calendar_fragments = 0;
-  game.calendar.negative_year_label = N_("BC");
-  game.calendar.positive_year_label = N_("AD");
+  fc_snprintf(game.calendar.negative_year_label, sizeof(game.calendar.negative_year_label), "BC");
+  fc_snprintf(game.calendar.positive_year_label, sizeof(game.calendar.positive_year_label), "AD");
   game.info.year = 100;
 
   result = calendar_text();
@@ -123,8 +127,8 @@ static void test_calendar_text_with_fragments(void **state)
   (void) state;
 
   game.calendar.calendar_fragments = 12;
-  game.calendar.negative_year_label = N_("BC");
-  game.calendar.positive_year_label = N_("AD");
+  fc_snprintf(game.calendar.negative_year_label, sizeof(game.calendar.negative_year_label), "BC");
+  fc_snprintf(game.calendar.positive_year_label, sizeof(game.calendar.positive_year_label), "AD");
   game.info.year = 100;
   game.info.fragment_count = 5;
 

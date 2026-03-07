@@ -59,6 +59,8 @@ test_sources = [
   'test_events.c',
   # Movement module tests
   'test_movement.c',
+  # Team module tests
+  'test_team.c',
 ]
 
 foreach test_file : test_sources
