@@ -20,6 +20,8 @@ test_sources = [
   'test_workertask.c',
   'test_idex.c',
   'test_tile.c',
+  # City module tests
+  'test_city.c',
 ]
 
 foreach test_file : test_sources
