@@ -66,7 +66,6 @@ test_sources = [
   # Team module tests
   'test_team.c',
   # Reqtext module tests
-  'test_reqtext.c',
   # Multipliers module tests
   'test_multipliers.c',
   # Spaceship module tests

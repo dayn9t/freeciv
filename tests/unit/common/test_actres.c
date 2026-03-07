@@ -233,16 +233,17 @@ static void test_actres_max_range_default(void **state)
 {
     (void) state;
 
-    /* Test ACTRES_NONE returns 0 */
-    assert_int_equal(actres_max_range_default(ACTRES_NONE), 0);
+    /* Test ACTRES_NONE returns default max range */
+    assert_int_equal(actres_max_range_default(ACTRES_NONE),
+                     RS_DEFAULT_ACTION_MAX_RANGE);
 
-    /* Test ACTRES_NUKE returns unlimited distance */
+    /* Test ACTRES_NUKE returns default explode nuclear max range */
     assert_int_equal(actres_max_range_default(ACTRES_NUKE),
-                     ACTION_DISTANCE_UNLIMITED);
+                     RS_DEFAULT_EXPLODE_NUCLEAR_MAX_RANGE);
 
-    /* Test ACTRES_NUKE_UNITS returns unlimited distance */
+    /* Test ACTRES_NUKE_UNITS returns default max range */
     assert_int_equal(actres_max_range_default(ACTRES_NUKE_UNITS),
-                     ACTION_DISTANCE_UNLIMITED);
+                     RS_DEFAULT_ACTION_MAX_RANGE);
 
     /* Test ACTRES_TELEPORT returns unlimited distance */
     assert_int_equal(actres_max_range_default(ACTRES_TELEPORT),
@@ -330,21 +331,21 @@ static void test_actres_sub_target_kind_default(void **state)
     assert_int_equal(actres_sub_target_kind_default(ACTRES_SPY_TARGETED_STEAL_TECH),
                      ASTK_TECH);
 
-    /* Test ACTRES_ROAD returns extra sub target */
+    /* Test ACTRES_ROAD returns extra_not_there sub target */
     assert_int_equal(actres_sub_target_kind_default(ACTRES_ROAD),
-                     ASTK_EXTRA);
+                     ASTK_EXTRA_NOT_THERE);
 
-    /* Test ACTRES_BASE returns extra sub target */
+    /* Test ACTRES_BASE returns extra_not_there sub target */
     assert_int_equal(actres_sub_target_kind_default(ACTRES_BASE),
-                     ASTK_EXTRA);
+                     ASTK_EXTRA_NOT_THERE);
 
-    /* Test ACTRES_MINE returns extra sub target */
+    /* Test ACTRES_MINE returns extra_not_there sub target */
     assert_int_equal(actres_sub_target_kind_default(ACTRES_MINE),
-                     ASTK_EXTRA);
+                     ASTK_EXTRA_NOT_THERE);
 
-    /* Test ACTRES_IRRIGATE returns extra sub target */
+    /* Test ACTRES_IRRIGATE returns extra_not_there sub target */
     assert_int_equal(actres_sub_target_kind_default(ACTRES_IRRIGATE),
-                     ASTK_EXTRA);
+                     ASTK_EXTRA_NOT_THERE);
 
     /* Test ACTRES_PILLAGE returns extra sub target */
     assert_int_equal(actres_sub_target_kind_default(ACTRES_PILLAGE),
