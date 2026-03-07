@@ -78,6 +78,12 @@ test_sources = [
   'test_actres.c',
   # Traderoutes module tests
   'test_traderoutes.c',
+  # Vision module tests
+  'test_vision.c',
+  # Path finding module tests
+  'test_path_finding.c',
+  # Metaknowledge module tests
+  'test_metaknowledge.c',
 ]
 
 foreach test_file : test_sources
