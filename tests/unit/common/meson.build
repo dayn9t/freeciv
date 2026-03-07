@@ -75,6 +75,8 @@ test_sources = [
   'test_diptreaty.c',
   # Disaster module tests
   'test_disaster.c',
+  # Actres module tests
+  'test_actres.c',
 ]
 
 foreach test_file : test_sources
