@@ -73,6 +73,8 @@ test_sources = [
   'test_spaceship.c',
   # Diplomatic treaty module tests
   'test_diptreaty.c',
+  # Disaster module tests
+  'test_disaster.c',
 ]
 
 foreach test_file : test_sources
