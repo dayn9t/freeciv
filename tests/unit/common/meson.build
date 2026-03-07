@@ -80,6 +80,8 @@ test_sources = [
   'test_traderoutes.c',
   # Vision module tests
   'test_vision.c',
+  # FC interface module tests
+  'test_fc_interface.c',
   # Path finding module tests
   'test_path_finding.c',
   # Metaknowledge module tests
