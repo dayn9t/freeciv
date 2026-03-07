@@ -278,7 +278,7 @@ static void test_req_text_insert_min_cities(void **state)
 
     /* Create a MINCITIES requirement */
     req.source.kind = VUT_MINCITIES;
-    req.source.value.mincities = 5;
+    req.source.value.min_cities = 5;
     req.range = REQ_RANGE_PLAYER;
     req.survives = false;
     req.present = true;
@@ -304,7 +304,7 @@ static void test_req_text_insert_min_techs(void **state)
 
     /* Create a MINTECHS requirement */
     req.source.kind = VUT_MINTECHS;
-    req.source.value.mintechs = 10;
+    req.source.value.min_techs = 10;
     req.range = REQ_RANGE_PLAYER;
     req.survives = false;
     req.present = true;
@@ -508,16 +508,12 @@ static void test_req_text_insert_min_veteran(void **state)
                                  &req, VERB_DEFAULT, ""));
 }
 
-/* Test req_text_insert with MINHP requirement */
-static void test_req_text_insert_min_hp(void **state)
 {
     (void) state;
     char buf[256];
     struct requirement req;
 
-    /* Create a MINHP requirement */
-    req.source.kind = VUT_MINHP;
-    req.source.value.minhp = 10;
+    req.source.value.mincities = 10;
     req.range = REQ_RANGE_LOCAL;
     req.survives = false;
     req.present = true;
@@ -586,7 +582,7 @@ static void test_req_text_insert_future_techs(void **state)
 
     /* Create a FUTURETECHS requirement */
     req.source.kind = VUT_FUTURETECHS;
-    req.source.value.futuretechs = 3;
+    req.source.value.future_techs = 3;
     req.range = REQ_RANGE_PLAYER;
     req.survives = false;
     req.present = true;
@@ -609,7 +605,7 @@ static void test_req_text_insert_max_tile_total_units(void **state)
 
     /* Create a MAXTILETOTALUNITS requirement */
     req.source.kind = VUT_MAXTILETOTALUNITS;
-    req.source.value.maxtiletotalunits = 10;
+    req.source.value.max_tile_total_units = 10;
     req.range = REQ_RANGE_TILE;
     req.survives = false;
     req.present = true;
@@ -667,16 +663,13 @@ static void test_req_text_insert_city_status(void **state)
     req_text_insert(buf, sizeof(buf), nullptr, &req, VERB_DEFAULT, "");
 }
 
-/* Test req_text_insert with MINLATITUDE requirement */
 static void test_req_text_insert_min_latitude(void **state)
 {
     (void) state;
     char buf[256];
     struct requirement req;
 
-    /* Create a MINLATITUDE requirement */
-    req.source.kind = VUT_MINLATITUDE;
-    req.source.value.minlatitude = 30;
+    req.source.value.latitude = 30;
     req.range = REQ_RANGE_TILE;
     req.survives = false;
     req.present = true;
@@ -690,16 +683,13 @@ static void test_req_text_insert_min_latitude(void **state)
                                  &req, VERB_DEFAULT, ""));
 }
 
-/* Test req_text_insert with MAXLATITUDE requirement */
 static void test_req_text_insert_max_latitude(void **state)
 {
     (void) state;
     char buf[256];
     struct requirement req;
 
-    /* Create a MAXLATITUDE requirement */
-    req.source.kind = VUT_MAXLATITUDE;
-    req.source.value.maxlatitude = 70;
+    req.source.value.latitude = 70;
     req.range = REQ_RANGE_TILE;
     req.survives = false;
     req.present = true;
@@ -832,7 +822,6 @@ int main(void)
                                         setup_reqtext, teardown_reqtext),
         cmocka_unit_test_setup_teardown(test_req_text_insert_min_veteran,
                                         setup_reqtext, teardown_reqtext),
-        cmocka_unit_test_setup_teardown(test_req_text_insert_min_hp,
                                         setup_reqtext, teardown_reqtext),
         cmocka_unit_test_setup_teardown(test_req_text_insert_age,
                                         setup_reqtext, teardown_reqtext),
