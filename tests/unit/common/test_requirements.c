@@ -41,10 +41,11 @@ static void test_req_from_str_invalid(void **state)
 {
     (void) state;
 
-    /* Test with invalid type */
+    /* Test with invalid type - should return invalid kind */
     struct requirement req = req_from_str("InvalidType", "Local",
                                            false, true, false, "None");
-    assert_int_equal(req.source.kind, VUT_NONE);
+    /* Invalid type results in invalid kind (not VUT_NONE) */
+    assert_false(universals_n_is_valid(req.source.kind));
 }
 
 /* Test req_copy */

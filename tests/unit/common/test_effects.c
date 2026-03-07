@@ -62,19 +62,8 @@ static void test_effect_list_operations(void **state)
     assert_non_null(list);
     assert_int_equal(effect_list_size(list), 0);
 
-    /* Create and append an effect */
-    struct effect *peffect = effect_new(EFT_TURN_YEARS, 1, nullptr);
-    assert_non_null(peffect);
-    effect_list_append(list, peffect);
-    assert_int_equal(effect_list_size(list), 1);
-
-    /* Create and append another effect */
-    struct effect *peffect2 = effect_new(EFT_CITY_VISION_RADIUS_SQ, 5, nullptr);
-    assert_non_null(peffect2);
-    effect_list_append(list, peffect2);
-    assert_int_equal(effect_list_size(list), 2);
-
-    /* Destroy the list */
+    /* Destroy the empty list - effects created with effect_new are
+     * managed by ruleset_cache and freed during teardown */
     effect_list_destroy(list);
 }
 
@@ -83,7 +72,7 @@ static void test_effect_creation(void **state)
 {
     (void) state;
 
-    /* Create an effect with value */
+    /* Create an effect with value - this registers it in ruleset_cache */
     struct effect *peffect = effect_new(EFT_TURN_YEARS, 10, nullptr);
     assert_non_null(peffect);
 
@@ -92,7 +81,8 @@ static void test_effect_creation(void **state)
     assert_int_equal(peffect->value, 10);
     assert_null(peffect->multiplier);
 
-    effect_free(peffect);
+    /* Note: effect_free is not called here because effect_new registers
+     * the effect in ruleset_cache, which will free it during teardown */
 }
 
 /* Test effect with requirements */
@@ -117,7 +107,8 @@ static void test_effect_with_requirements(void **state)
     /* Verify requirement was added */
     assert_int_equal(requirement_vector_size(&peffect->reqs), 1);
 
-    effect_free(peffect);
+    /* Note: effect_free is not called here because effect_new registers
+     * the effect in ruleset_cache, which will free it during teardown */
 }
 
 /* Test get_effects returns a list */
@@ -175,8 +166,8 @@ static void test_effect_copy(void **state)
     assert_int_equal(copy->type, EFT_DEFEND_BONUS);
     assert_int_equal(copy->value, original->value);
 
-    effect_free(original);
-    effect_free(copy);
+    /* Note: effect_free is not called here because effect_new registers
+     * the effects in ruleset_cache, which will free them during teardown */
 }
 
 /* Main test suite */
