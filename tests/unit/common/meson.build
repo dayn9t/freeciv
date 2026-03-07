@@ -26,7 +26,7 @@ foreach test_file : test_sources
   test_name = test_file.replace('.c', '')
   test_exe = executable(test_name,
     test_file,
-    include_directories: [common_inc, include_directories('..')],
+    include_directories: [common_inc, include_directories('..'), include_directories('../../..')],
     link_with: [common_lib],
     dependencies: [cmocka_dep]
   )

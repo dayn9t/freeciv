@@ -23,7 +23,7 @@
 static int setup_requirements(void **state)
 {
     (void) state;
-    game_init();
+    game_init(false);
     requirements_init();
     return 0;
 }

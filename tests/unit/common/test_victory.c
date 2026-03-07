@@ -11,11 +11,17 @@
    GNU General Public License for more details.
 ***********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include <fc_config.h>
+#endif
+
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
+/* common */
+#include "fc_types.h"
 #include "victory.h"
 #include "game.h"
 

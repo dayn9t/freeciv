@@ -23,7 +23,7 @@
 static int setup_counters(void **state)
 {
     (void) state;
-    game_init();
+    game_init(false);
     counters_init();
     return 0;
 }

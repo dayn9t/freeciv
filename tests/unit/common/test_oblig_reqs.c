@@ -16,15 +16,16 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "common/oblig_reqs.h"
+#include "common/actions.h"
 #include "common/game.h"
 #include "common/nation.h"
+#include "common/oblig_reqs.h"
 
 /* Test setup and teardown */
 static int setup_oblig_reqs(void **state)
 {
     (void) state;
-    game_init();
+    game_init(false);
     oblig_hard_reqs_init();
     return 0;
 }

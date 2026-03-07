@@ -11,11 +11,16 @@
    GNU General Public License for more details.
 ***********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include <fc_config.h>
+#endif
+
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
+/* common */
 #include "map.h"
 #include "tile.h"
 #include "world_object.h"

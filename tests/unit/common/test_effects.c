@@ -23,7 +23,7 @@
 static int setup_effects(void **state)
 {
     (void) state;
-    game_init();
+    game_init(false);
     ruleset_cache_init();
     return 0;
 }
