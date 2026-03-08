@@ -5,7 +5,8 @@ mock_sources = files(
   'mock_player.c',
   'mock_map.c',
   'mock_city.c',
-  'mock_unit.c'
+  'mock_unit.c',
+  'mock_ruleset.c'
 )
 
 mock_inc = include_directories('.')
