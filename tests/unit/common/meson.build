@@ -124,6 +124,14 @@ foreach test_file : test_sources
       link_with: [common_lib, mock_lib],
       dependencies: [cmocka_dep]
     )
+  # Tile test needs mock library
+  elif test_name == 'test_tile'
+    test_exe = executable(test_name,
+      test_file,
+      include_directories: [common_inc, include_directories('..'), include_directories('../../..'), mock_inc],
+      link_with: [common_lib, mock_lib],
+      dependencies: [cmocka_dep]
+    )
   else
     test_exe = executable(test_name,
       test_file,

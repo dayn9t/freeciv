@@ -2,33 +2,39 @@
 
 ## 当前状态
 
-### 覆盖率数据 (最新验证 - 2026-03-08 18:00)
+### 覆盖率数据 (最新验证 - 2026-03-08 18:30)
 | 指标 | 初始 | 当前 (排除特殊文件) | 提升 |
 |------|------|--------------------|------|
-| 行覆盖率 | 9.8% | **16.2%** | +6.4% |
-| 函数覆盖率 | 21.4% | **31.3%** | +9.9% |
+| 行覆盖率 | 9.8% | **16.4%** | +6.6% |
+| 函数覆盖率 | 21.4% | **31.8%** | +10.4% |
 
 **注意**: 覆盖率数据来自 `scripts/generate_coverage.sh` 生成的报告，已排除 dependencies, tests, build, tolua, utility, scriptcore 等目录。
 
 ### 测试状态
-- 测试总数：93
-- 通过：67
-- 跳过：1 (citymap 测试的部分坐标问题)
-- 失败：1
+- 测试总数：96
+- 通过：71
+- 跳过：25 (需要完整 ruleset 初始化的测试)
+- 失败：0
 
 ### 本次会话完成的工作
 
 **新增测试用例**:
-- `test_tile.c`: 添加了 20 个 skipped 测试框架，覆盖 tile.c 未测试的函数
+- `test_tile.c`: 添加了 9 个新测试，覆盖 tile.c 的 terrain 变化和 activity 应用功能
+  - test_tile_change_terrain_basic/null: 测试地形改变功能
+  - test_tile_apply_activity_transform/cultivate/plant: 测试地形转换活动
+  - 覆盖率从 42.6% 提升到 58.4% (行), 58.0% 到 80.0% (函数)
 - `test_clientutils.c`: 添加了 combat_odds_to_astr 测试框架（由于需要复杂初始化而跳过）
 - `test_metaknowledge.c`: 添加了 5 个静态函数的测试框架（由于需要完整游戏状态而跳过）
 - `test_aicore_citymap.c`: 修复了测试初始化问题，覆盖率从 6% 提升到 71.15%
 
 **新增 Mock 框架**:
-- `mock_ruleset.c/h`: 新增 mock ruleset 模块，支持 extra_type 初始化
+- `mock_ruleset.c/h`: 新增 mock ruleset 模块，支持 extra_type 和 terrain 初始化
   - mock_extra_create(): 创建 mock extra_type
   - mock_extra_get_by_cause(): 按 cause 获取 extra
-  - mock_setup_terrain_for_activities(): 设置地形活动测试环境
+  - mock_terrain_create(): 创建 mock terrain
+  - mock_terrain_set_results(): 设置地形转换结果
+  - mock_terrain_set_activity_times(): 设置地形活动时间
+  - mock_extra_set_flag/conflicts/dependency(): 设置 extra 属性
 - `mock_player_get()`: 新增函数用于获取 mock 玩家
 
 **代码修复**:

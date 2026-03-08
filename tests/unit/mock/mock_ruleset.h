@@ -40,6 +40,18 @@ struct road_type *mock_road_create(const char *name);
 /* Create a mock terrain for testing */
 struct terrain *mock_terrain_create(const char *name);
 
+/* Set terrain transformation results */
+void mock_terrain_set_results(struct terrain *pterrain,
+                              struct terrain *cultivate,
+                              struct terrain *plant,
+                              struct terrain *transform);
+
+/* Set terrain activity times */
+void mock_terrain_set_activity_times(struct terrain *pterrain,
+                                     int cultivate_time,
+                                     int plant_time,
+                                     int transform_time);
+
 /* Create a mock unit_type for testing */
 struct unit_type *mock_unit_type_create(const char *name);
 
@@ -51,6 +63,17 @@ struct extra_type *mock_extra_get_by_cause(enum extra_cause cause, int index);
 
 /* Setup terrain with extras for testing tile activities */
 void mock_setup_terrain_for_activities(void);
+
+/* Set extra flags for testing */
+void mock_extra_set_flag(struct extra_type *pextra, enum extra_flag_id flag);
+
+/* Set extra conflicts for testing */
+void mock_extra_set_conflicts(struct extra_type *pextra,
+                              struct extra_type *conflict);
+
+/* Set extra dependency for testing */
+void mock_extra_set_dependency(struct extra_type *pextra,
+                               struct extra_type *dependency);
 
 #ifdef __cplusplus
 }

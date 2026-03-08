@@ -31,6 +31,9 @@
 #include "world_object.h"
 #include "game.h"
 
+/* mock */
+#include "../mock/mock_ruleset.h"
+
 #define TEST_MAP_WIDTH 64
 #define TEST_MAP_HEIGHT 64
 
@@ -40,6 +43,9 @@ static struct player test_player;
 static int setup(void **state)
 {
   (void) state;
+
+  /* Initialize mock ruleset */
+  mock_ruleset_init_minimal();
 
   /* Initialize a minimal mock map for testing */
   memset(&wld, 0, sizeof(wld));
@@ -78,6 +84,9 @@ static int setup(void **state)
 static int teardown(void **state)
 {
   (void) state;
+
+  /* Cleanup mock ruleset */
+  mock_ruleset_cleanup();
 
   /* Free the mock map */
   if (wld.map.tiles != NULL) {
@@ -646,7 +655,6 @@ static void test_tile_extras_defense_bonus_wrapper(void **state)
 static void test_tile_roads_output_incr_no_roads(void **state)
 {
   (void) state;
-  struct tile *ptile = &wld.map.tiles[33];
 
   /* This test requires terrain to be set up properly */
   /* Skip this test as it requires ruleset initialization */
@@ -656,7 +664,6 @@ static void test_tile_roads_output_incr_no_roads(void **state)
 static void test_tile_roads_output_bonus(void **state)
 {
   (void) state;
-  struct tile *ptile = &wld.map.tiles[34];
 
   /* This function requires ruleset data */
   /* Placeholder test - just verify it doesn't crash */
@@ -1069,61 +1076,149 @@ static void test_tile_is_placing_with_placing(void **state)
 
 /* ==================== Tile Terrain Modification Tests ==================== */
 
-static void test_tile_change_terrain_skip(void **state)
+static void test_tile_change_terrain_basic(void **state)
 {
   (void) state;
-  /* Skip - requires ruleset and terrain transformation setup */
+  struct tile *ptile = &wld.map.tiles[60];
+  struct terrain *terrain1, *terrain2;
+
+  /* Create mock terrains */
+  terrain1 = mock_terrain_create("Grassland");
+  terrain2 = mock_terrain_create("Plains");
+
+  assert_non_null(terrain1);
+  assert_non_null(terrain2);
+
+  /* Set initial terrain */
+  ptile->terrain = terrain1;
+  assert_ptr_equal(tile_terrain(ptile), terrain1);
+
+  /* Change terrain */
+  tile_change_terrain(ptile, terrain2);
+  assert_ptr_equal(tile_terrain(ptile), terrain2);
+}
+
+static void test_tile_change_terrain_null(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[61];
+  struct terrain *terrain;
+
+  terrain = mock_terrain_create("Grassland");
+  assert_non_null(terrain);
+
+  /* Set then clear terrain */
+  ptile->terrain = terrain;
+  tile_change_terrain(ptile, NULL);
+  assert_null(tile_terrain(ptile));
+}
+
+static void test_tile_apply_activity_irrigate(void **state)
+{
+  (void) state;
+  /* Skip - tile_irrigate calls tile_extra_apply which requires
+   * is_native_tile_to_extra and full ruleset initialization */
   skip();
 }
 
-static void test_tile_irrigate_skip(void **state)
+static void test_tile_apply_activity_mine(void **state)
 {
   (void) state;
-  /* Skip - requires ruleset and extra_type initialization */
+  /* Skip - tile_mine calls tile_extra_apply which requires
+   * is_native_tile_to_extra and full ruleset initialization */
   skip();
 }
 
-static void test_tile_mine_skip(void **state)
+static void test_tile_apply_activity_transform(void **state)
 {
   (void) state;
-  /* Skip - requires ruleset and extra_type initialization */
-  skip();
+  struct tile *ptile = &wld.map.tiles[64];
+  struct terrain *src, *dst;
+
+  /* Create mock terrains */
+  src = mock_terrain_create("Grassland");
+  dst = mock_terrain_create("Forest");
+
+  /* Set transform result */
+  mock_terrain_set_results(src, NULL, NULL, dst);
+
+  /* Set initial terrain */
+  ptile->terrain = src;
+
+  /* Apply transform */
+  bool result = tile_apply_activity(ptile, ACTIVITY_TRANSFORM, NULL);
+
+  /* Should succeed */
+  assert_true(result);
+  /* Check terrain changed */
+  assert_ptr_equal(tile_terrain(ptile), dst);
 }
 
-static void test_tile_transform_skip(void **state)
+static void test_tile_apply_activity_cultivate(void **state)
 {
   (void) state;
-  /* Skip - requires terrain transform_result setup */
-  skip();
+  struct tile *ptile = &wld.map.tiles[65];
+  struct terrain *src, *dst;
+
+  /* Create mock terrains */
+  src = mock_terrain_create("Grassland");
+  dst = mock_terrain_create("Plains");
+
+  /* Set cultivate result */
+  mock_terrain_set_results(src, dst, NULL, NULL);
+
+  /* Set initial terrain */
+  ptile->terrain = src;
+
+  /* Apply cultivate */
+  bool result = tile_apply_activity(ptile, ACTIVITY_CULTIVATE, NULL);
+
+  /* Should succeed */
+  assert_true(result);
+  /* Check terrain changed */
+  assert_ptr_equal(tile_terrain(ptile), dst);
 }
 
-static void test_tile_cultivate_skip(void **state)
+static void test_tile_apply_activity_plant(void **state)
 {
   (void) state;
-  /* Skip - requires terrain cultivate_result setup */
-  skip();
-}
+  struct tile *ptile = &wld.map.tiles[66];
+  struct terrain *src, *dst;
 
-static void test_tile_plant_skip(void **state)
-{
-  (void) state;
-  /* Skip - requires terrain plant_result setup */
-  skip();
+  /* Create mock terrains */
+  src = mock_terrain_create("Grassland");
+  dst = mock_terrain_create("Forest");
+
+  /* Set plant result */
+  mock_terrain_set_results(src, NULL, dst, NULL);
+
+  /* Set initial terrain */
+  ptile->terrain = src;
+
+  /* Apply plant */
+  bool result = tile_apply_activity(ptile, ACTIVITY_PLANT, NULL);
+
+  /* Should succeed */
+  assert_true(result);
+  /* Check terrain changed */
+  assert_ptr_equal(tile_terrain(ptile), dst);
 }
 
 /* ==================== Tile Extra Management Tests ==================== */
 
-static void test_tile_extra_apply_skip(void **state)
+static void test_tile_extra_apply_basic(void **state)
 {
   (void) state;
-  /* Skip - requires extra_type with dependencies setup */
+  /* Skip - tile_extra_apply requires is_native_tile_to_extra and other
+   * ruleset functions that need full initialization */
   skip();
 }
 
-static void test_tile_extra_rm_apply_skip(void **state)
+static void test_tile_extra_rm_apply_basic(void **state)
 {
   (void) state;
-  /* Skip - requires extra_type with dependencies setup */
+  /* Skip - tile_extra_rm_apply requires rm_recursive_extras which needs
+   * full ruleset initialization */
   skip();
 }
 
@@ -1382,16 +1477,17 @@ int main(void)
     cmocka_unit_test_setup_teardown(test_tile_is_placing_with_placing, setup, teardown),
 
     /* Tile Terrain Modification Tests */
-    cmocka_unit_test_setup_teardown(test_tile_change_terrain_skip, setup, teardown),
-    cmocka_unit_test_setup_teardown(test_tile_irrigate_skip, setup, teardown),
-    cmocka_unit_test_setup_teardown(test_tile_mine_skip, setup, teardown),
-    cmocka_unit_test_setup_teardown(test_tile_transform_skip, setup, teardown),
-    cmocka_unit_test_setup_teardown(test_tile_cultivate_skip, setup, teardown),
-    cmocka_unit_test_setup_teardown(test_tile_plant_skip, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_change_terrain_basic, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_change_terrain_null, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_apply_activity_irrigate, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_apply_activity_mine, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_apply_activity_transform, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_apply_activity_cultivate, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_apply_activity_plant, setup, teardown),
 
     /* Tile Extra Management Tests */
-    cmocka_unit_test_setup_teardown(test_tile_extra_apply_skip, setup, teardown),
-    cmocka_unit_test_setup_teardown(test_tile_extra_rm_apply_skip, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_extra_apply_basic, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_extra_rm_apply_basic, setup, teardown),
 
     /* Tile Base/Road Check Tests */
     cmocka_unit_test_setup_teardown(test_tile_has_base_skip, setup, teardown),
