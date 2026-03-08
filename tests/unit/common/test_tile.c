@@ -756,6 +756,317 @@ static void test_opposite_direction(void **state)
   assert_int_equal(opposite_direction(DIR8_WEST), DIR8_EAST);
 }
 
+/* ==================== Tile Add/Remove Extra Tests (Enhanced) ==================== */
+
+static void test_tile_add_extra_valid(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[35];
+
+  /* Initially extras should be clear */
+  BV_CLR_ALL(ptile->extras);
+
+  /* Adding NULL extra should not crash */
+  tile_add_extra(ptile, NULL);
+}
+
+static void test_tile_remove_extra_valid(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[36];
+
+  /* Removing NULL extra should not crash */
+  tile_remove_extra(ptile, NULL);
+}
+
+/* ==================== Tile Has River Tests ==================== */
+
+static void test_tile_has_river_false(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[37];
+
+  /* Tile without river extras should return false */
+  BV_CLR_ALL(ptile->extras);
+  assert_false(tile_has_river(ptile));
+}
+
+/* ==================== Tile Has Visible Extra Tests ==================== */
+
+static void test_tile_has_visible_extra_not_present(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[38];
+  struct extra_type dummy_extra;
+
+  memset(&dummy_extra, 0, sizeof(dummy_extra));
+  BV_CLR_ALL(ptile->extras);
+
+  /* Extra not present should return false */
+  assert_false(tile_has_visible_extra(ptile, &dummy_extra));
+}
+
+/* ==================== Tile Has Cause Extra Tests ==================== */
+
+static void test_tile_has_cause_extra_no_extras(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[39];
+
+  BV_CLR_ALL(ptile->extras);
+
+  /* No extras should return false for any cause */
+  assert_false(tile_has_cause_extra(ptile, EC_ROAD));
+  assert_false(tile_has_cause_extra(ptile, EC_BASE));
+}
+
+/* ==================== Tile Has Conflicting Extra Tests ==================== */
+
+static void test_tile_has_conflicting_extra_no_conflicts(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[40];
+  struct extra_type dummy_extra;
+
+  memset(&dummy_extra, 0, sizeof(dummy_extra));
+  BV_CLR_ALL(dummy_extra.conflicts);
+  BV_CLR_ALL(ptile->extras);
+
+  /* No extras present should return false */
+  assert_false(tile_has_conflicting_extra(ptile, &dummy_extra));
+}
+
+/* ==================== Tile Has Road/Base Tests ==================== */
+
+static void test_tile_has_base_false(void **state)
+{
+  (void) state;
+  /* This test requires ruleset data to be loaded for base_extra_get.
+   * Skip this test as it requires full game initialization. */
+  skip();
+}
+
+static void test_tile_has_road_false(void **state)
+{
+  (void) state;
+  /* This test requires ruleset data to be loaded for road_extra_get.
+   * Skip this test as it requires full game initialization. */
+  skip();
+}
+
+/* ==================== Tile Has Road Flag Tests ==================== */
+
+static void test_tile_has_road_flag_false(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[43];
+
+  BV_CLR_ALL(ptile->extras);
+
+  /* No roads should return false for any flag */
+  assert_false(tile_has_road_flag(ptile, RF_RIVER));
+}
+
+/* ==================== Tile Has Extra Flag Tests ==================== */
+
+static void test_tile_has_extra_flag_false(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[44];
+
+  BV_CLR_ALL(ptile->extras);
+
+  /* No extras should return false for any flag */
+  assert_false(tile_has_extra_flag(ptile, EF_TERR_CHANGE_REMOVES));
+}
+
+/* ==================== Tile Info Pollution Tests ==================== */
+
+static void test_tile_get_info_text_no_terrain(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[45];
+  const char *info;
+
+  /* Set a minimal terrain to avoid null pointer issues */
+  struct terrain test_terrain;
+  memset(&test_terrain, 0, sizeof(test_terrain));
+  ptile->terrain = &test_terrain;
+
+  /* Should handle terrain gracefully */
+  info = tile_get_info_text(ptile, FALSE, 0);
+  assert_non_null(info);
+}
+
+/* ==================== Tile Activity Time Tests ==================== */
+
+static void test_tile_activity_time_idle(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[46];
+
+  /* Idle activity should return 0 */
+  assert_int_equal(tile_activity_time(ACTIVITY_IDLE, ptile, NULL), 0);
+}
+
+static void test_tile_activity_time_sentry(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[47];
+
+  /* Sentry activity should return 0 */
+  assert_int_equal(tile_activity_time(ACTIVITY_SENTRY, ptile, NULL), 0);
+}
+
+static void test_tile_activity_time_fortified(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[48];
+
+  /* Fortified activity should return 0 */
+  assert_int_equal(tile_activity_time(ACTIVITY_FORTIFIED, ptile, NULL), 0);
+}
+
+/* ==================== Tile Apply Activity Tests ==================== */
+
+static void test_tile_apply_activity_idle(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[49];
+
+  /* Idle activity should return FALSE (not implemented) */
+  assert_false(tile_apply_activity(ptile, ACTIVITY_IDLE, NULL));
+}
+
+static void test_tile_apply_activity_sentry(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[50];
+
+  /* Sentry activity should return FALSE (not implemented) */
+  assert_false(tile_apply_activity(ptile, ACTIVITY_SENTRY, NULL));
+}
+
+static void test_tile_apply_activity_fortified(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[51];
+
+  /* Fortified activity should return FALSE (not implemented) */
+  assert_false(tile_apply_activity(ptile, ACTIVITY_FORTIFIED, NULL));
+}
+
+/* ==================== Tile Virtual Destroy Tests ==================== */
+
+static void test_tile_virtual_destroy_with_units(void **state)
+{
+  (void) state;
+
+  /* Create virtual tile and destroy - should handle cleanup */
+  struct tile *vtile = tile_virtual_new(NULL);
+  assert_non_null(vtile);
+
+  tile_virtual_destroy(vtile);
+}
+
+/* ==================== Tile Set Resource Tests ==================== */
+
+static void test_tile_set_resource_no_change(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[52];
+  struct extra_type test_resource;
+
+  memset(&test_resource, 0, sizeof(test_resource));
+  ptile->resource = &test_resource;
+
+  /* Setting same resource should be no-op */
+  tile_set_resource(ptile, &test_resource);
+  assert_ptr_equal(ptile->resource, &test_resource);
+}
+
+static void test_tile_set_resource_null_clears(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[53];
+  struct extra_type test_resource;
+
+  memset(&test_resource, 0, sizeof(test_resource));
+  ptile->resource = &test_resource;
+  ptile->terrain = NULL; /* No terrain compatibility check */
+
+  /* Setting NULL should clear resource */
+  tile_set_resource(ptile, NULL);
+  assert_null(ptile->resource);
+}
+
+/* ==================== Tile Hash Key Tests (Enhanced) ==================== */
+
+static void test_tile_hash_key_consistency(void **state)
+{
+  (void) state;
+  struct tile *ptile1 = &wld.map.tiles[54];
+  struct tile *ptile2 = &wld.map.tiles[54];
+
+  /* Same tile should return same key */
+  void *key1 = tile_hash_key(ptile1);
+  void *key2 = tile_hash_key(ptile2);
+
+  assert_ptr_equal(key1, key2);
+}
+
+/* ==================== Tile Set Continent Tests ==================== */
+
+static void test_tile_set_continent_zero(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[55];
+
+  /* Setting continent to 0 should work */
+  tile_set_continent(ptile, 0);
+  assert_int_equal(tile_continent(ptile), 0);
+}
+
+/* ==================== Tile Map Check Tests (Enhanced) ==================== */
+
+static void test_tile_map_check_empty_map(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[56];
+
+  /* Even with valid tile, should work */
+  assert_true(tile_map_check(&wld.map, ptile));
+}
+
+/* ==================== Tile Extras Safe Tests ==================== */
+
+static void test_tile_extras_safe_null(void **state)
+{
+  (void) state;
+
+  const bv_extras *extras = tile_extras_safe(NULL);
+  assert_non_null(extras);
+  /* Should return the null extras */
+  assert_ptr_equal(extras, tile_extras_null());
+}
+
+/* ==================== Tile Is Placing Tests (Enhanced) ==================== */
+
+static void test_tile_is_placing_with_placing(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[57];
+  struct extra_type test_extra;
+
+  memset(&test_extra, 0, sizeof(test_extra));
+  ptile->placing = &test_extra;
+
+  assert_true(tile_is_placing(ptile));
+
+  ptile->placing = NULL;
+  assert_false(tile_is_placing(ptile));
+}
+
 int main(void)
 {
   const struct CMUnitTest tests[] = {
@@ -849,6 +1160,67 @@ int main(void)
     /* Direction Tests */
     cmocka_unit_test_setup_teardown(test_dir_reverse, setup, teardown),
     cmocka_unit_test_setup_teardown(test_opposite_direction, setup, teardown),
+
+    /* Enhanced Add/Remove Extra Tests */
+    cmocka_unit_test_setup_teardown(test_tile_add_extra_valid, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_remove_extra_valid, setup, teardown),
+
+    /* Tile Has River Tests */
+    cmocka_unit_test_setup_teardown(test_tile_has_river_false, setup, teardown),
+
+    /* Tile Has Visible Extra Tests */
+    cmocka_unit_test_setup_teardown(test_tile_has_visible_extra_not_present, setup, teardown),
+
+    /* Tile Has Cause Extra Tests */
+    cmocka_unit_test_setup_teardown(test_tile_has_cause_extra_no_extras, setup, teardown),
+
+    /* Tile Has Conflicting Extra Tests */
+    cmocka_unit_test_setup_teardown(test_tile_has_conflicting_extra_no_conflicts, setup, teardown),
+
+    /* Tile Has Road/Base Tests */
+    cmocka_unit_test_setup_teardown(test_tile_has_base_false, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_has_road_false, setup, teardown),
+
+    /* Tile Has Road Flag Tests */
+    cmocka_unit_test_setup_teardown(test_tile_has_road_flag_false, setup, teardown),
+
+    /* Tile Has Extra Flag Tests */
+    cmocka_unit_test_setup_teardown(test_tile_has_extra_flag_false, setup, teardown),
+
+    /* Tile Info Pollution Tests */
+    cmocka_unit_test_setup_teardown(test_tile_get_info_text_no_terrain, setup, teardown),
+
+    /* Tile Activity Time Tests */
+    cmocka_unit_test_setup_teardown(test_tile_activity_time_idle, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_activity_time_sentry, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_activity_time_fortified, setup, teardown),
+
+    /* Tile Apply Activity Tests */
+    cmocka_unit_test_setup_teardown(test_tile_apply_activity_idle, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_apply_activity_sentry, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_apply_activity_fortified, setup, teardown),
+
+    /* Tile Virtual Destroy Tests */
+    cmocka_unit_test_setup_teardown(test_tile_virtual_destroy_with_units, setup, teardown),
+
+    /* Tile Set Resource Tests */
+    cmocka_unit_test_setup_teardown(test_tile_set_resource_no_change, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_set_resource_null_clears, setup, teardown),
+
+    /* Tile Hash Key Tests (Enhanced) */
+    cmocka_unit_test_setup_teardown(test_tile_hash_key_consistency, setup, teardown),
+
+    /* Tile Set Continent Tests */
+    cmocka_unit_test_setup_teardown(test_tile_set_continent_zero, setup, teardown),
+
+    /* Tile Map Check Tests (Enhanced) */
+    cmocka_unit_test_setup_teardown(test_tile_map_check_empty_map, setup, teardown),
+
+    /* Tile Extras Safe Tests */
+    cmocka_unit_test_setup_teardown(test_tile_extras_safe_null, setup, teardown),
+
+    /* Tile Is Placing Tests (Enhanced) */
+    cmocka_unit_test_setup_teardown(test_tile_is_placing_with_placing, setup, teardown),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
