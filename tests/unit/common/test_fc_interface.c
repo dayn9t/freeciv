@@ -23,6 +23,7 @@
 
 /* common */
 #include "fc_interface.h"
+#include "fc_types.h"
 
 /* External variables from fc_interface.c */
 extern bool fc_funcs_defined;

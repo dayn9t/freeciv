@@ -1234,6 +1234,404 @@ static void test_predefined_color_luaconsole_debug(void **state)
   assert_null(ftc_luaconsole_debug.background);
 }
 
+/* Test featured_text_to_plain_text() with unclosed quote */
+static void test_featured_text_to_plain_text_unclosed_quote(void **state)
+{
+  const char *input = "[c fg=\"unclosed]Text[/c]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with empty quoted value */
+static void test_featured_text_to_plain_text_empty_quoted_value(void **state)
+{
+  const char *input = "[c fg=\"\"]Text[/c]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Text");
+  assert_non_null(tags);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with unquoted color value */
+static void test_featured_text_to_plain_text_unquoted_color(void **state)
+{
+  const char *input = "[c fg=red123 bg=blue456]Text[/c]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Text");
+  assert_non_null(tags);
+
+  if (text_tag_list_size(tags) > 0) {
+    struct text_tag *tag = text_tag_list_get(tags, 0);
+    assert_string_equal(text_tag_color_foreground(tag), "red123");
+    assert_string_equal(text_tag_color_background(tag), "blue456");
+  }
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with tile link invalid x format */
+static void test_featured_text_to_plain_text_tile_invalid_x_format(void **state)
+{
+  const char *input = "[l tgt=\"tile\" x=abc y=5 /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with tile link invalid y format */
+static void test_featured_text_to_plain_text_tile_invalid_y_format(void **state)
+{
+  const char *input = "[l tgt=\"tile\" x=5 y=abc /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with unit link invalid id format */
+static void test_featured_text_to_plain_text_unit_invalid_id_format(void **state)
+{
+  const char *input = "[l tgt=\"unit\" id=abc /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with invalid target type string */
+static void test_featured_text_to_plain_text_invalid_target_type(void **state)
+{
+  const char *input = "[l tgt=\"unknown\" id=1 /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+  assert_int_equal(text_tag_list_size(tags), 0);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with multiple options in link */
+static void test_featured_text_to_plain_text_link_multiple_options(void **state)
+{
+  const char *input = "[l tgt=\"city\" id=42 name=\"BigCity\" /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+  if (text_tag_list_size(tags) > 0) {
+    struct text_tag *tag = text_tag_list_get(tags, 0);
+    assert_int_equal(text_tag_type(tag), TTT_LINK);
+    assert_int_equal(text_tag_link_type(tag), TLT_CITY);
+    assert_int_equal(text_tag_link_id(tag), 42);
+  }
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with extra whitespace in sequence */
+static void test_featured_text_to_plain_text_extra_whitespace(void **state)
+{
+  const char *input = "[  b  ]Hello[  /b  ]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with color using both fg and background options */
+static void test_featured_text_to_plain_text_color_option_fallback(void **state)
+{
+  const char *input = "[color fg=\"#FF0000\" background=\"#0000FF\"]Text[/color]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Text");
+  assert_non_null(tags);
+
+  if (text_tag_list_size(tags) > 0) {
+    struct text_tag *tag = text_tag_list_get(tags, 0);
+    assert_string_equal(text_tag_color_foreground(tag), "#FF0000");
+    assert_string_equal(text_tag_color_background(tag), "#0000FF");
+  }
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with only background option */
+static void test_featured_text_to_plain_text_color_only_bg_option(void **state)
+{
+  const char *input = "[c bg=\"#00FF00\"]Text[/c]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Text");
+  assert_non_null(tags);
+
+  if (text_tag_list_size(tags) > 0) {
+    struct text_tag *tag = text_tag_list_get(tags, 0);
+    assert_string_equal(text_tag_color_foreground(tag), "");
+    assert_string_equal(text_tag_color_background(tag), "#00FF00");
+  }
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with link pair having content */
+static void test_featured_text_to_plain_text_link_pair_content(void **state)
+{
+  const char *input = "[l tgt=\"city\" id=1]Click here[/l]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Click here");
+  assert_non_null(tags);
+  assert_int_equal(text_tag_list_size(tags), 1);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with city link missing name */
+static void test_featured_text_to_plain_text_city_missing_name(void **state)
+{
+  const char *input = "[l tgt=\"city\" id=5 /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+  if (text_tag_list_size(tags) > 0) {
+    struct text_tag *tag = text_tag_list_get(tags, 0);
+    assert_int_equal(text_tag_link_id(tag), 5);
+  }
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with unit link missing name */
+static void test_featured_text_to_plain_text_unit_missing_name(void **state)
+{
+  const char *input = "[l tgt=\"unit\" id=10 /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+  if (text_tag_list_size(tags) > 0) {
+    struct text_tag *tag = text_tag_list_get(tags, 0);
+    assert_int_equal(text_tag_link_id(tag), 10);
+  }
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with negative id values */
+static void test_featured_text_to_plain_text_negative_id(void **state)
+{
+  const char *input = "[l tgt=\"city\" id=-1 name=\"Invalid\" /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+  if (text_tag_list_size(tags) > 0) {
+    struct text_tag *tag = text_tag_list_get(tags, 0);
+    assert_int_equal(text_tag_link_id(tag), -1);
+  }
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with large id values */
+static void test_featured_text_to_plain_text_large_id(void **state)
+{
+  const char *input = "[l tgt=\"unit\" id=999999 name=\"LargeID\" /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+  if (text_tag_list_size(tags) > 0) {
+    struct text_tag *tag = text_tag_list_get(tags, 0);
+    assert_int_equal(text_tag_link_id(tag), 999999);
+  }
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with negative tile coordinates */
+static void test_featured_text_to_plain_text_negative_tile_coords(void **state)
+{
+  const char *input = "[l tgt=\"tile\" x=-1 y=-1 /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with zero tile coordinates */
+static void test_featured_text_to_plain_text_zero_tile_coords(void **state)
+{
+  const char *input = "[l tgt=\"tile\" x=0 y=0 /]";
+  char output[128];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_apply_tag() with FT_OFFSET_UNSET for both */
+static void test_featured_text_apply_tag_both_unset(void **state)
+{
+  const char *input = "Hello";
+  char output[64];
+  size_t len;
+
+  (void) state;
+
+  len = featured_text_apply_tag(input, output, sizeof(output), TTT_BOLD, FT_OFFSET_UNSET, FT_OFFSET_UNSET);
+  assert_int_equal(len, 0);
+}
+
+/* Test featured_text_to_plain_text() with mixed case tag names */
+static void test_featured_text_to_plain_text_mixed_case(void **state)
+{
+  const char *input = "[BoLd]Hello[/bOlD]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_string_equal(output, "Hello");
+  assert_non_null(tags);
+  assert_int_equal(text_tag_list_size(tags), 1);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test featured_text_to_plain_text() with mixed case color options */
+static void test_featured_text_to_plain_text_mixed_case_options(void **state)
+{
+  const char *input = "[c FG=\"#FF0000\" BG=\"#0000FF\"]Text[/c]";
+  char output[64];
+  struct text_tag_list *tags = NULL;
+
+  (void) state;
+
+  featured_text_to_plain_text(input, output, sizeof(output), &tags, FALSE);
+  assert_non_null(tags);
+
+  text_tag_list_destroy(tags);
+}
+
+/* Test text_tag_list_destroy with NULL */
+static void test_text_tag_list_destroy_null(void **state)
+{
+  (void) state;
+
+  text_tag_list_destroy(NULL);
+}
+
+/* Test featured_text_apply_tag() with color empty strings */
+static void test_featured_text_apply_tag_color_empty_strings(void **state)
+{
+  const char *input = "Hello";
+  char output[64];
+  struct ft_color color = FT_COLOR("", "");
+  size_t len;
+
+  (void) state;
+
+  len = featured_text_apply_tag(input, output, sizeof(output), TTT_COLOR, 0, 5, color);
+  assert_int_equal(len, 0);
+}
+
+/* Test text_tag_new() with FT_OFFSET_UNSET for both offsets */
+static void test_text_tag_new_both_offsets_unset(void **state)
+{
+  struct text_tag *tag;
+
+  (void) state;
+
+  tag = text_tag_new(TTT_BOLD, FT_OFFSET_UNSET, FT_OFFSET_UNSET);
+  assert_non_null(tag);
+  assert_int_equal(text_tag_start_offset(tag), FT_OFFSET_UNSET);
+  assert_int_equal(text_tag_stop_offset(tag), FT_OFFSET_UNSET);
+
+  text_tag_destroy(tag);
+}
+
 int main(void)
 {
   const struct CMUnitTest tests[] = {

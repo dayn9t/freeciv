@@ -15,6 +15,13 @@
 
 #include "utility/mem.h"
 #include "utility/shared.h"
+#include "city.h"
+
+/* Define player_slot locally since it's not exposed in headers */
+struct player_slot {
+  struct player *player;
+  int index;
+};
 
 static struct player_slot *mock_slots = NULL;
 static int mock_slot_count = 0;
@@ -36,14 +43,14 @@ struct player *mock_player_create(int id)
 
   pplayer->slot = &mock_slots[id];
   mock_slots[id].player = pplayer;
+  mock_slots[id].index = id;
 
-  pplayer->id = id;
   pplayer->is_alive = TRUE;
   pplayer->is_connected = FALSE;
   pplayer->is_ready = FALSE;
   pplayer->phase_done = FALSE;
 
-  pplayer->economic.gold = GAME_DEFAULT_GOLD;
+  pplayer->economic.gold = 0;  /* Default gold */
   pplayer->economic.tax = PLAYER_DEFAULT_TAX_RATE;
   pplayer->economic.science = PLAYER_DEFAULT_SCIENCE_RATE;
   pplayer->economic.luxury = PLAYER_DEFAULT_LUXURY_RATE;

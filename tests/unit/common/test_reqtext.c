@@ -790,6 +790,649 @@ static void test_req_text_insert_nl_quiet(void **state)
     assert_string_equal(buf + strlen(buf) - 1, "\n");
 }
 
+/* Test req_text_insert with MINYEAR at different values */
+static void test_req_text_insert_min_year_values(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    /* Test with year 0 */
+    req.source.kind = VUT_MINYEAR;
+    req.source.value.minyear = 0;
+    req.range = REQ_RANGE_WORLD;
+    req.survives = false;
+    req.present = true;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+
+    /* Test with negative year */
+    req.source.value.minyear = -1000;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* Test with positive year */
+    req.source.value.minyear = 2000;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+}
+
+/* Test req_text_insert with MINCITIES absent */
+static void test_req_text_insert_min_cities_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MINCITIES;
+    req.source.value.min_cities = 5;
+    req.range = REQ_RANGE_PLAYER;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+}
+
+/* Test req_text_insert with MINTECHS absent */
+static void test_req_text_insert_min_techs_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MINTECHS;
+    req.source.value.min_techs = 10;
+    req.range = REQ_RANGE_PLAYER;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+}
+
+/* Test req_text_insert with MINSIZE absent */
+static void test_req_text_insert_min_size_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MINSIZE;
+    req.source.value.minsize = 8;
+    req.range = REQ_RANGE_CITY;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+}
+
+/* Test req_text_insert with MINCULTURE absent and different ranges */
+static void test_req_text_insert_min_culture_ranges(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MINCULTURE;
+    req.source.value.minculture = 100;
+    req.survives = false;
+    req.present = true;
+    req.quiet = false;
+
+    /* CITY range */
+    req.range = REQ_RANGE_CITY;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* PLAYER range */
+    req.range = REQ_RANGE_PLAYER;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* TEAM range */
+    req.range = REQ_RANGE_TEAM;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* ALLIANCE range */
+    req.range = REQ_RANGE_ALLIANCE;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* WORLD range */
+    req.range = REQ_RANGE_WORLD;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+}
+
+/* Test req_text_insert with MINMOVES absent */
+static void test_req_text_insert_min_moves_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MINMOVES;
+    req.source.value.minmoves = 2;
+    req.range = REQ_RANGE_LOCAL;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+}
+
+/* Test req_text_insert with MINVETERAN absent and plural forms */
+static void test_req_text_insert_min_veteran_plural(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MINVETERAN;
+    req.range = REQ_RANGE_LOCAL;
+    req.survives = false;
+    req.present = true;
+    req.quiet = false;
+
+    /* Test singular (1) */
+    req.source.value.minveteran = 1;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* Test plural (2+) */
+    req.source.value.minveteran = 2;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* Test absent */
+    req.present = false;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+}
+
+/* Test req_text_insert with MINHP absent and plural forms */
+static void test_req_text_insert_min_hp_plural(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MINHP;
+    req.range = REQ_RANGE_LOCAL;
+    req.survives = false;
+    req.present = true;
+    req.quiet = false;
+
+    /* Test singular (1) */
+    req.source.value.min_hit_points = 1;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* Test plural (2+) */
+    req.source.value.min_hit_points = 10;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* Test absent */
+    req.present = false;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+}
+
+/* Test req_text_insert with AGE absent */
+static void test_req_text_insert_age_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_AGE;
+    req.source.value.age = 5;
+    req.range = REQ_RANGE_PLAYER;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+}
+
+/* Test req_text_insert with FORM_AGE absent */
+static void test_req_text_insert_form_age_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_FORM_AGE;
+    req.source.value.form_age = 10;
+    req.range = REQ_RANGE_PLAYER;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+}
+
+/* Test req_text_insert with FUTURETECHS absent */
+static void test_req_text_insert_future_techs_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_FUTURETECHS;
+    req.source.value.future_techs = 3;
+    req.range = REQ_RANGE_PLAYER;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+}
+
+/* Test req_text_insert with MAXTILETOTALUNITS absent */
+static void test_req_text_insert_max_tile_total_units_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MAXTILETOTALUNITS;
+    req.source.value.max_tile_total_units = 10;
+    req.range = REQ_RANGE_TILE;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+}
+
+/* Test req_text_insert with MINLATITUDE different ranges */
+static void test_req_text_insert_min_latitude_ranges(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MINLATITUDE;
+    req.source.value.latitude = 30;
+    req.survives = false;
+    req.present = true;
+    req.quiet = false;
+
+    /* TILE range */
+    req.range = REQ_RANGE_TILE;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* CADJACENT range */
+    req.range = REQ_RANGE_CADJACENT;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* ADJACENT range */
+    req.range = REQ_RANGE_ADJACENT;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* WORLD range */
+    req.range = REQ_RANGE_WORLD;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* Test absent */
+    req.range = REQ_RANGE_TILE;
+    req.present = false;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+}
+
+/* Test req_text_insert with MAXLATITUDE different ranges */
+static void test_req_text_insert_max_latitude_ranges(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MAXLATITUDE;
+    req.source.value.latitude = 70;
+    req.survives = false;
+    req.present = true;
+    req.quiet = false;
+
+    /* TILE range */
+    req.range = REQ_RANGE_TILE;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* CADJACENT range */
+    req.range = REQ_RANGE_CADJACENT;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* ADJACENT range */
+    req.range = REQ_RANGE_ADJACENT;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* WORLD range */
+    req.range = REQ_RANGE_WORLD;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+}
+
+/* Test req_text_insert with MINFOREIGNPCT absent */
+static void test_req_text_insert_min_foreign_pct_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_MINFOREIGNPCT;
+    req.source.value.minforeignpct = 50;
+    req.range = REQ_RANGE_CITY;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+}
+
+/* Test req_text_insert with ACTIVITY absent */
+static void test_req_text_insert_activity_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_ACTIVITY;
+    req.source.value.activity = 0;
+    req.range = REQ_RANGE_LOCAL;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+}
+
+/* Test req_text_insert with AI_LEVEL absent */
+static void test_req_text_insert_ai_level_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_AI_LEVEL;
+    req.source.value.ai_level = 1;
+    req.range = REQ_RANGE_PLAYER;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+}
+
+/* Test req_text_insert with CITYTILE absent */
+static void test_req_text_insert_city_tile_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_CITYTILE;
+    req.source.value.citytile = 0;
+    req.range = REQ_RANGE_LOCAL;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    req_text_insert(buf, sizeof(buf), nullptr, &req, VERB_DEFAULT, "");
+}
+
+/* Test req_text_insert with CITYSTATUS absent */
+static void test_req_text_insert_city_status_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_CITYSTATUS;
+    req.source.value.citystatus = 0;
+    req.range = REQ_RANGE_CITY;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    req_text_insert(buf, sizeof(buf), nullptr, &req, VERB_DEFAULT, "");
+}
+
+/* Test req_text_insert with TERRAINCLASS absent */
+static void test_req_text_insert_terrain_class_absent(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    req.source.kind = VUT_TERRAINCLASS;
+    req.source.value.terrainclass = 0;
+    req.range = REQ_RANGE_TILE;
+    req.survives = false;
+    req.present = false;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    req_text_insert(buf, sizeof(buf), nullptr, &req, VERB_DEFAULT, "");
+}
+
+/* Test req_text_insert with MAX_DISTANCE_SQ requirement */
+static void test_req_text_insert_distance_sq(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    /* Test distance 0 */
+    req.source.kind = VUT_MAX_DISTANCE_SQ;
+    req.source.value.distance_sq = 0;
+    req.range = REQ_RANGE_TILE;
+    req.survives = false;
+    req.present = true;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* Test distance 1 */
+    req.source.value.distance_sq = 1;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* Test distance 2 */
+    req.source.value.distance_sq = 2;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* Test larger distance */
+    req.source.value.distance_sq = 10;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+
+    /* Test absent */
+    req.present = false;
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, ""));
+}
+
+/* Test req_text_insert with unsupported ranges */
+static void test_req_text_insert_unsupported_ranges(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    /* MINCITIES with unsupported WORLD range */
+    req.source.kind = VUT_MINCITIES;
+    req.source.value.min_cities = 5;
+    req.range = REQ_RANGE_WORLD;
+    req.survives = false;
+    req.present = true;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_false(req_text_insert(buf, sizeof(buf), nullptr,
+                                  &req, VERB_DEFAULT, ""));
+
+    /* MINSIZE with unsupported PLAYER range */
+    req.source.kind = VUT_MINSIZE;
+    req.source.value.minsize = 8;
+    req.range = REQ_RANGE_PLAYER;
+
+    buf[0] = '\0';
+    assert_false(req_text_insert(buf, sizeof(buf), nullptr,
+                                  &req, VERB_DEFAULT, ""));
+
+    /* MINMOVES with unsupported PLAYER range */
+    req.source.kind = VUT_MINMOVES;
+    req.source.value.minmoves = 2;
+    req.range = REQ_RANGE_PLAYER;
+
+    buf[0] = '\0';
+    assert_false(req_text_insert(buf, sizeof(buf), nullptr,
+                                  &req, VERB_DEFAULT, ""));
+}
+
+/* Test req_text_insert_nl with various requirements */
+static void test_req_text_insert_nl_various(void **state)
+{
+    (void) state;
+    char buf[256];
+    struct requirement req;
+
+    /* Test with MINCITIES */
+    req.source.kind = VUT_MINCITIES;
+    req.source.value.min_cities = 5;
+    req.range = REQ_RANGE_PLAYER;
+    req.survives = false;
+    req.present = true;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert_nl(buf, sizeof(buf), nullptr,
+                                    &req, VERB_DEFAULT, ""));
+    assert_true(strlen(buf) > 0);
+    assert_string_equal(buf + strlen(buf) - 1, "\n");
+
+    /* Test with MINTECHS */
+    req.source.kind = VUT_MINTECHS;
+    req.source.value.min_techs = 10;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert_nl(buf, sizeof(buf), nullptr,
+                                    &req, VERB_DEFAULT, ""));
+    assert_string_equal(buf + strlen(buf) - 1, "\n");
+
+    /* Test with MINSIZE */
+    req.source.kind = VUT_MINSIZE;
+    req.source.value.minsize = 8;
+    req.range = REQ_RANGE_CITY;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert_nl(buf, sizeof(buf), nullptr,
+                                    &req, VERB_DEFAULT, ""));
+    assert_string_equal(buf + strlen(buf) - 1, "\n");
+}
+
+/* Test req_text_insert with long prefix */
+static void test_req_text_insert_long_prefix(void **state)
+{
+    (void) state;
+    char buf[512];
+    struct requirement req;
+    const char *long_prefix = "This is a very long prefix that tests buffer handling: ";
+
+    req.source.kind = VUT_MINYEAR;
+    req.source.value.minyear = 0;
+    req.range = REQ_RANGE_WORLD;
+    req.survives = false;
+    req.present = true;
+    req.quiet = false;
+
+    buf[0] = '\0';
+    assert_true(req_text_insert(buf, sizeof(buf), nullptr,
+                                 &req, VERB_DEFAULT, long_prefix));
+
+    /* Buffer should start with the prefix */
+    assert_true(strncmp(buf, long_prefix, strlen(long_prefix)) == 0);
+}
+
 /* Main test suite */
 int main(void)
 {
@@ -855,6 +1498,55 @@ int main(void)
         cmocka_unit_test_setup_teardown(test_req_text_insert_nl_none,
                                         setup_reqtext, teardown_reqtext),
         cmocka_unit_test_setup_teardown(test_req_text_insert_nl_quiet,
+                                        setup_reqtext, teardown_reqtext),
+        /* New tests for improved coverage */
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_year_values,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_cities_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_techs_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_size_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_culture_ranges,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_moves_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_veteran_plural,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_hp_plural,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_age_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_form_age_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_future_techs_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_max_tile_total_units_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_latitude_ranges,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_max_latitude_ranges,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_min_foreign_pct_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_activity_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_ai_level_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_city_tile_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_city_status_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_terrain_class_absent,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_distance_sq,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_unsupported_ranges,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_nl_various,
+                                        setup_reqtext, teardown_reqtext),
+        cmocka_unit_test_setup_teardown(test_req_text_insert_long_prefix,
                                         setup_reqtext, teardown_reqtext),
     };
 

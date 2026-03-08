@@ -12,7 +12,8 @@ mock_inc = include_directories('.')
 
 mock_lib = static_library('fc_test_mock',
   mock_sources,
-  include_directories: [common_inc, mock_inc],
+  include_directories: [common_inc, mock_inc, include_directories('../../..')],
   link_with: [common_lib],
-  dependencies: [cmocka_dep]
+  dependencies: [cmocka_dep],
+  sources: [specenum, enum_targets['common'], pack_common]
 )

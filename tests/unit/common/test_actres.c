@@ -895,6 +895,479 @@ static void test_actres_get_act_time_instantaneous(void **state)
                      ACT_TIME_INSTANTANEOUS);
 }
 
+/* Test actres_creates_extra for various action results */
+static void test_actres_creates_extra(void **state)
+{
+    (void) state;
+
+    /* Test with nullptr extra - should return FALSE */
+    assert_false(actres_creates_extra(ACTRES_ROAD, nullptr));
+
+    /* Test actions that don't create extras */
+    assert_false(actres_creates_extra(ACTRES_ESTABLISH_EMBASSY, nullptr));
+    assert_false(actres_creates_extra(ACTRES_ATTACK, nullptr));
+    assert_false(actres_creates_extra(ACTRES_FORTIFY, nullptr));
+    assert_false(actres_creates_extra(ACTRES_PILLAGE, nullptr));
+    assert_false(actres_creates_extra(ACTRES_CLEAN, nullptr));
+
+    /* Note: ACTRES_NONE is ACTRES_LAST which would be out-of-bounds for act_results array */
+
+    /* Test actions with extra causes but nullptr extra */
+    assert_false(actres_creates_extra(ACTRES_ROAD, nullptr));
+    assert_false(actres_creates_extra(ACTRES_BASE, nullptr));
+    assert_false(actres_creates_extra(ACTRES_MINE, nullptr));
+    assert_false(actres_creates_extra(ACTRES_IRRIGATE, nullptr));
+
+    /* Test actions without extra causes with nullptr extra */
+    assert_false(actres_creates_extra(ACTRES_TRANSFORM_TERRAIN, nullptr));
+    assert_false(actres_creates_extra(ACTRES_CULTIVATE, nullptr));
+    assert_false(actres_creates_extra(ACTRES_PLANT, nullptr));
+    assert_false(actres_creates_extra(ACTRES_CONVERT, nullptr));
+}
+
+/* Test actres_removes_extra for actions without removal causes */
+static void test_actres_removes_extra_no_cause(void **state)
+{
+    (void) state;
+
+    /* Test actions that don't remove extras (have ERM_NONE) - with nullptr extra
+     * These should return FALSE before calling is_extra_removed_by
+     * Note: ACTRES_PILLAGE, ACTRES_CLEAN, ACTRES_HUT_ENTER, ACTRES_HUT_FRIGHTEN
+     * have non-ERM_NONE removal causes, so we can't test them with nullptr.
+     * ACTRES_NONE is ACTRES_LAST which would be out-of-bounds for act_results array. */
+    assert_false(actres_removes_extra(ACTRES_ESTABLISH_EMBASSY, nullptr));
+    assert_false(actres_removes_extra(ACTRES_ATTACK, nullptr));
+    assert_false(actres_removes_extra(ACTRES_FORTIFY, nullptr));
+    assert_false(actres_removes_extra(ACTRES_ROAD, nullptr));
+    assert_false(actres_removes_extra(ACTRES_BASE, nullptr));
+    assert_false(actres_removes_extra(ACTRES_MINE, nullptr));
+    assert_false(actres_removes_extra(ACTRES_IRRIGATE, nullptr));
+
+    /* Test actions without removal causes */
+    assert_false(actres_removes_extra(ACTRES_TRANSFORM_TERRAIN, nullptr));
+    assert_false(actres_removes_extra(ACTRES_CULTIVATE, nullptr));
+    assert_false(actres_removes_extra(ACTRES_PLANT, nullptr));
+    assert_false(actres_removes_extra(ACTRES_CONVERT, nullptr));
+    assert_false(actres_removes_extra(ACTRES_DISBAND_UNIT, nullptr));
+    assert_false(actres_removes_extra(ACTRES_TRADE_ROUTE, nullptr));
+    assert_false(actres_removes_extra(ACTRES_FOUND_CITY, nullptr));
+    assert_false(actres_removes_extra(ACTRES_JOIN_CITY, nullptr));
+    assert_false(actres_removes_extra(ACTRES_NUKE, nullptr));
+    assert_false(actres_removes_extra(ACTRES_NUKE_UNITS, nullptr));
+    assert_false(actres_removes_extra(ACTRES_BOMBARD, nullptr));
+    assert_false(actres_removes_extra(ACTRES_PARADROP, nullptr));
+    assert_false(actres_removes_extra(ACTRES_AIRLIFT, nullptr));
+    assert_false(actres_removes_extra(ACTRES_HEAL_UNIT, nullptr));
+    assert_false(actres_removes_extra(ACTRES_CONQUER_CITY, nullptr));
+    assert_false(actres_removes_extra(ACTRES_SPY_POISON, nullptr));
+    assert_false(actres_removes_extra(ACTRES_SPY_STEAL_GOLD, nullptr));
+    assert_false(actres_removes_extra(ACTRES_SPY_SABOTAGE_CITY, nullptr));
+    assert_false(actres_removes_extra(ACTRES_SPY_INCITE_CITY, nullptr));
+    assert_false(actres_removes_extra(ACTRES_CAPTURE_UNITS, nullptr));
+    assert_false(actres_removes_extra(ACTRES_STEAL_MAPS, nullptr));
+    assert_false(actres_removes_extra(ACTRES_DESTROY_CITY, nullptr));
+    assert_false(actres_removes_extra(ACTRES_EXPEL_UNIT, nullptr));
+    assert_false(actres_removes_extra(ACTRES_HOME_CITY, nullptr));
+    assert_false(actres_removes_extra(ACTRES_UPGRADE_UNIT, nullptr));
+    assert_false(actres_removes_extra(ACTRES_STRIKE_BUILDING, nullptr));
+    assert_false(actres_removes_extra(ACTRES_STRIKE_PRODUCTION, nullptr));
+    assert_false(actres_removes_extra(ACTRES_SPY_ATTACK, nullptr));
+    assert_false(actres_removes_extra(ACTRES_SPY_SPREAD_PLAGUE, nullptr));
+    assert_false(actres_removes_extra(ACTRES_CONQUER_EXTRAS, nullptr));
+    /* ACTRES_HUT_ENTER and ACTRES_HUT_FRIGHTEN have ERM_ENTER - skip nullptr test */
+    assert_false(actres_removes_extra(ACTRES_UNIT_MOVE, nullptr));
+    assert_false(actres_removes_extra(ACTRES_TELEPORT, nullptr));
+    assert_false(actres_removes_extra(ACTRES_TELEPORT_CONQUER, nullptr));
+    assert_false(actres_removes_extra(ACTRES_ENABLER_CHECK, nullptr));
+    assert_false(actres_removes_extra(ACTRES_SPY_ESCAPE, nullptr));
+    assert_false(actres_removes_extra(ACTRES_SPY_BRIBE_UNIT, nullptr));
+    assert_false(actres_removes_extra(ACTRES_SPY_BRIBE_STACK, nullptr));
+    assert_false(actres_removes_extra(ACTRES_SPY_SABOTAGE_UNIT, nullptr));
+    assert_false(actres_removes_extra(ACTRES_WIPE_UNITS, nullptr));
+    assert_false(actres_removes_extra(ACTRES_COLLECT_RANSOM, nullptr));
+    assert_false(actres_removes_extra(ACTRES_TRANSPORT_DEBOARD, nullptr));
+    assert_false(actres_removes_extra(ACTRES_TRANSPORT_UNLOAD, nullptr));
+    assert_false(actres_removes_extra(ACTRES_TRANSPORT_LOAD, nullptr));
+    assert_false(actres_removes_extra(ACTRES_TRANSPORT_DISEMBARK, nullptr));
+    assert_false(actres_removes_extra(ACTRES_TRANSPORT_BOARD, nullptr));
+    assert_false(actres_removes_extra(ACTRES_TRANSPORT_EMBARK, nullptr));
+    assert_false(actres_removes_extra(ACTRES_HOMELESS, nullptr));
+}
+
+/* Test actres_legal_target_kind edge cases */
+static void test_actres_legal_target_kind_edge_cases(void **state)
+{
+    (void) state;
+
+    /* Test ACTRES_NONE with ATK_COUNT (invalid) */
+    assert_false(actres_legal_target_kind(ACTRES_NONE, ATK_COUNT));
+
+    /* Test various actions with ATK_COUNT (should return FALSE) */
+    assert_false(actres_legal_target_kind(ACTRES_ESTABLISH_EMBASSY, ATK_COUNT));
+    assert_false(actres_legal_target_kind(ACTRES_SPY_BRIBE_UNIT, ATK_COUNT));
+    assert_false(actres_legal_target_kind(ACTRES_FOUND_CITY, ATK_COUNT));
+    assert_false(actres_legal_target_kind(ACTRES_ATTACK, ATK_COUNT));
+}
+
+/* Test actres_get_act_time for fortify activity */
+static void test_actres_get_act_time_fortify(void **state)
+{
+    (void) state;
+
+    /* Test ACTRES_FORTIFY - should return 1 (fortifying time) */
+    assert_int_equal(actres_get_act_time(ACTRES_FORTIFY, nullptr, nullptr, nullptr),
+                     1);
+}
+
+/* Test actres_target_kind_default for ACTRES_NONE */
+static void test_actres_target_kind_default_none(void **state)
+{
+    (void) state;
+
+    /* Test ACTRES_NONE returns default user action target kind */
+    assert_int_equal(actres_target_kind_default(ACTRES_NONE),
+                     RS_DEFAULT_USER_ACTION_TARGET_KIND);
+}
+
+/* Test actres_sub_target_kind_default comprehensive */
+static void test_actres_sub_target_kind_default_comprehensive(void **state)
+{
+    (void) state;
+
+    /* Test all sub target kinds are covered */
+    assert_int_equal(actres_sub_target_kind_default(ACTRES_SPY_TARGETED_SABOTAGE_CITY),
+                     ASTK_BUILDING);
+    assert_int_equal(actres_sub_target_kind_default(ACTRES_STRIKE_BUILDING),
+                     ASTK_BUILDING);
+    assert_int_equal(actres_sub_target_kind_default(ACTRES_SPY_TARGETED_STEAL_TECH),
+                     ASTK_TECH);
+    assert_int_equal(actres_sub_target_kind_default(ACTRES_PILLAGE),
+                     ASTK_EXTRA);
+    assert_int_equal(actres_sub_target_kind_default(ACTRES_CLEAN),
+                     ASTK_EXTRA);
+    assert_int_equal(actres_sub_target_kind_default(ACTRES_ROAD),
+                     ASTK_EXTRA_NOT_THERE);
+    assert_int_equal(actres_sub_target_kind_default(ACTRES_BASE),
+                     ASTK_EXTRA_NOT_THERE);
+    assert_int_equal(actres_sub_target_kind_default(ACTRES_MINE),
+                     ASTK_EXTRA_NOT_THERE);
+    assert_int_equal(actres_sub_target_kind_default(ACTRES_IRRIGATE),
+                     ASTK_EXTRA_NOT_THERE);
+}
+
+/* Test actres_activity_result comprehensive */
+static void test_actres_activity_result_comprehensive(void **state)
+{
+    (void) state;
+
+    /* Test all activity types */
+    assert_int_equal(actres_activity_result(ACTRES_TRANSFORM_TERRAIN),
+                     ACTIVITY_TRANSFORM);
+    assert_int_equal(actres_activity_result(ACTRES_CULTIVATE),
+                     ACTIVITY_CULTIVATE);
+    assert_int_equal(actres_activity_result(ACTRES_PLANT),
+                     ACTIVITY_PLANT);
+    assert_int_equal(actres_activity_result(ACTRES_PILLAGE),
+                     ACTIVITY_PILLAGE);
+    assert_int_equal(actres_activity_result(ACTRES_FORTIFY),
+                     ACTIVITY_FORTIFYING);
+    assert_int_equal(actres_activity_result(ACTRES_ROAD),
+                     ACTIVITY_GEN_ROAD);
+    assert_int_equal(actres_activity_result(ACTRES_CONVERT),
+                     ACTIVITY_CONVERT);
+    assert_int_equal(actres_activity_result(ACTRES_BASE),
+                     ACTIVITY_BASE);
+    assert_int_equal(actres_activity_result(ACTRES_MINE),
+                     ACTIVITY_MINE);
+    assert_int_equal(actres_activity_result(ACTRES_IRRIGATE),
+                     ACTIVITY_IRRIGATE);
+    assert_int_equal(actres_activity_result(ACTRES_CLEAN),
+                     ACTIVITY_CLEAN);
+}
+
+/* Test actres_is_hostile comprehensive */
+static void test_actres_is_hostile_comprehensive(void **state)
+{
+    (void) state;
+
+    /* Test all hostile actions are correctly identified */
+    assert_true(actres_is_hostile(ACTRES_SPY_INVESTIGATE_CITY));
+    assert_true(actres_is_hostile(ACTRES_SPY_POISON));
+    assert_true(actres_is_hostile(ACTRES_SPY_STEAL_GOLD));
+    assert_true(actres_is_hostile(ACTRES_SPY_SABOTAGE_CITY));
+    assert_true(actres_is_hostile(ACTRES_SPY_TARGETED_SABOTAGE_CITY));
+    assert_true(actres_is_hostile(ACTRES_SPY_SABOTAGE_CITY_PRODUCTION));
+    assert_true(actres_is_hostile(ACTRES_SPY_STEAL_TECH));
+    assert_true(actres_is_hostile(ACTRES_SPY_TARGETED_STEAL_TECH));
+    assert_true(actres_is_hostile(ACTRES_SPY_INCITE_CITY));
+    assert_true(actres_is_hostile(ACTRES_SPY_BRIBE_UNIT));
+    assert_true(actres_is_hostile(ACTRES_SPY_BRIBE_STACK));
+    assert_true(actres_is_hostile(ACTRES_SPY_SABOTAGE_UNIT));
+    assert_true(actres_is_hostile(ACTRES_CAPTURE_UNITS));
+    assert_true(actres_is_hostile(ACTRES_STEAL_MAPS));
+    assert_true(actres_is_hostile(ACTRES_BOMBARD));
+    assert_true(actres_is_hostile(ACTRES_SPY_NUKE));
+    assert_true(actres_is_hostile(ACTRES_NUKE));
+    assert_true(actres_is_hostile(ACTRES_NUKE_UNITS));
+    assert_true(actres_is_hostile(ACTRES_DESTROY_CITY));
+    assert_true(actres_is_hostile(ACTRES_EXPEL_UNIT));
+    assert_true(actres_is_hostile(ACTRES_ATTACK));
+    assert_true(actres_is_hostile(ACTRES_WIPE_UNITS));
+    assert_true(actres_is_hostile(ACTRES_COLLECT_RANSOM));
+    assert_true(actres_is_hostile(ACTRES_CONQUER_CITY));
+    assert_true(actres_is_hostile(ACTRES_PILLAGE));
+    assert_true(actres_is_hostile(ACTRES_SPY_ATTACK));
+    assert_true(actres_is_hostile(ACTRES_SPY_SPREAD_PLAGUE));
+    assert_true(actres_is_hostile(ACTRES_CONQUER_EXTRAS));
+    assert_true(actres_is_hostile(ACTRES_STRIKE_BUILDING));
+    assert_true(actres_is_hostile(ACTRES_STRIKE_PRODUCTION));
+
+    /* Test all non-hostile actions */
+    assert_false(actres_is_hostile(ACTRES_NONE));
+    assert_false(actres_is_hostile(ACTRES_ESTABLISH_EMBASSY));
+    assert_false(actres_is_hostile(ACTRES_TRADE_ROUTE));
+    assert_false(actres_is_hostile(ACTRES_MARKETPLACE));
+    assert_false(actres_is_hostile(ACTRES_HELP_WONDER));
+    assert_false(actres_is_hostile(ACTRES_FOUND_CITY));
+    assert_false(actres_is_hostile(ACTRES_JOIN_CITY));
+    assert_false(actres_is_hostile(ACTRES_DISBAND_UNIT_RECOVER));
+    assert_false(actres_is_hostile(ACTRES_DISBAND_UNIT));
+    assert_false(actres_is_hostile(ACTRES_HOME_CITY));
+    assert_false(actres_is_hostile(ACTRES_HOMELESS));
+    assert_false(actres_is_hostile(ACTRES_UPGRADE_UNIT));
+    assert_false(actres_is_hostile(ACTRES_PARADROP));
+    assert_false(actres_is_hostile(ACTRES_PARADROP_CONQUER));
+    assert_false(actres_is_hostile(ACTRES_AIRLIFT));
+    assert_false(actres_is_hostile(ACTRES_HEAL_UNIT));
+    assert_false(actres_is_hostile(ACTRES_TRANSFORM_TERRAIN));
+    assert_false(actres_is_hostile(ACTRES_CULTIVATE));
+    assert_false(actres_is_hostile(ACTRES_PLANT));
+    assert_false(actres_is_hostile(ACTRES_FORTIFY));
+    assert_false(actres_is_hostile(ACTRES_ROAD));
+    assert_false(actres_is_hostile(ACTRES_CONVERT));
+    assert_false(actres_is_hostile(ACTRES_BASE));
+    assert_false(actres_is_hostile(ACTRES_MINE));
+    assert_false(actres_is_hostile(ACTRES_IRRIGATE));
+    assert_false(actres_is_hostile(ACTRES_CLEAN));
+    assert_false(actres_is_hostile(ACTRES_TRANSPORT_DEBOARD));
+    assert_false(actres_is_hostile(ACTRES_TRANSPORT_UNLOAD));
+    assert_false(actres_is_hostile(ACTRES_TRANSPORT_LOAD));
+    assert_false(actres_is_hostile(ACTRES_TRANSPORT_DISEMBARK));
+    assert_false(actres_is_hostile(ACTRES_TRANSPORT_BOARD));
+    assert_false(actres_is_hostile(ACTRES_TRANSPORT_EMBARK));
+    assert_false(actres_is_hostile(ACTRES_HUT_ENTER));
+    assert_false(actres_is_hostile(ACTRES_HUT_FRIGHTEN));
+    assert_false(actres_is_hostile(ACTRES_UNIT_MOVE));
+    assert_false(actres_is_hostile(ACTRES_TELEPORT));
+    assert_false(actres_is_hostile(ACTRES_TELEPORT_CONQUER));
+    assert_false(actres_is_hostile(ACTRES_ENABLER_CHECK));
+    assert_false(actres_is_hostile(ACTRES_SPY_ESCAPE));
+}
+
+/* Test actres_get_battle_kind comprehensive */
+static void test_actres_get_battle_kind_comprehensive(void **state)
+{
+    (void) state;
+
+    /* Test ABK_NONE actions */
+    assert_int_equal(actres_get_battle_kind(ACTRES_NONE), ABK_NONE);
+    assert_int_equal(actres_get_battle_kind(ACTRES_ESTABLISH_EMBASSY), ABK_NONE);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_INVESTIGATE_CITY), ABK_NONE);
+    assert_int_equal(actres_get_battle_kind(ACTRES_TRADE_ROUTE), ABK_NONE);
+    assert_int_equal(actres_get_battle_kind(ACTRES_MARKETPLACE), ABK_NONE);
+    assert_int_equal(actres_get_battle_kind(ACTRES_HELP_WONDER), ABK_NONE);
+    assert_int_equal(actres_get_battle_kind(ACTRES_FOUND_CITY), ABK_NONE);
+    assert_int_equal(actres_get_battle_kind(ACTRES_JOIN_CITY), ABK_NONE);
+    assert_int_equal(actres_get_battle_kind(ACTRES_NUKE), ABK_NONE);
+    assert_int_equal(actres_get_battle_kind(ACTRES_BOMBARD), ABK_NONE);
+
+    /* Test ABK_DIPLOMATIC actions */
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_POISON), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_STEAL_GOLD), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_SABOTAGE_CITY), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_TARGETED_SABOTAGE_CITY), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_SABOTAGE_CITY_PRODUCTION), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_STEAL_TECH), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_TARGETED_STEAL_TECH), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_INCITE_CITY), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_BRIBE_UNIT), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_BRIBE_STACK), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_SABOTAGE_UNIT), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_STEAL_MAPS), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_NUKE), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_SPREAD_PLAGUE), ABK_DIPLOMATIC);
+    assert_int_equal(actres_get_battle_kind(ACTRES_SPY_ATTACK), ABK_DIPLOMATIC);
+
+    /* Test ABK_STANDARD actions */
+    assert_int_equal(actres_get_battle_kind(ACTRES_ATTACK), ABK_STANDARD);
+    assert_int_equal(actres_get_battle_kind(ACTRES_COLLECT_RANSOM), ABK_STANDARD);
+    assert_int_equal(actres_get_battle_kind(ACTRES_WIPE_UNITS), ABK_STANDARD);
+}
+
+/* Test actres_min_range_default for more action results */
+static void test_actres_min_range_default_more(void **state)
+{
+    (void) state;
+
+    /* Test actions that return RS_DEFAULT_ACTION_MIN_RANGE via assertion path */
+    /* These trigger the fc_assert_msg path */
+    assert_int_equal(actres_min_range_default(ACTRES_ESTABLISH_EMBASSY),
+                     RS_DEFAULT_ACTION_MIN_RANGE);
+    assert_int_equal(actres_min_range_default(ACTRES_SPY_INVESTIGATE_CITY),
+                     RS_DEFAULT_ACTION_MIN_RANGE);
+    assert_int_equal(actres_min_range_default(ACTRES_TRADE_ROUTE),
+                     RS_DEFAULT_ACTION_MIN_RANGE);
+    assert_int_equal(actres_min_range_default(ACTRES_ATTACK),
+                     RS_DEFAULT_ACTION_MIN_RANGE);
+    assert_int_equal(actres_min_range_default(ACTRES_FOUND_CITY),
+                     RS_DEFAULT_ACTION_MIN_RANGE);
+}
+
+/* Test actres_max_range_default for more action results */
+static void test_actres_max_range_default_more(void **state)
+{
+    (void) state;
+
+    /* Test actions that return RS_DEFAULT_ACTION_MAX_RANGE via assertion path */
+    assert_int_equal(actres_max_range_default(ACTRES_ESTABLISH_EMBASSY),
+                     RS_DEFAULT_ACTION_MAX_RANGE);
+    assert_int_equal(actres_max_range_default(ACTRES_SPY_INVESTIGATE_CITY),
+                     RS_DEFAULT_ACTION_MAX_RANGE);
+    assert_int_equal(actres_max_range_default(ACTRES_TRADE_ROUTE),
+                     RS_DEFAULT_ACTION_MAX_RANGE);
+    assert_int_equal(actres_max_range_default(ACTRES_ATTACK),
+                     RS_DEFAULT_ACTION_MAX_RANGE);
+    assert_int_equal(actres_max_range_default(ACTRES_FOUND_CITY),
+                     RS_DEFAULT_ACTION_MAX_RANGE);
+}
+
+/* Test actres_target_compl_calc for all action results */
+static void test_actres_target_compl_calc_all(void **state)
+{
+    (void) state;
+
+    /* Test ACTRES_NONE returns simple target complexity */
+    assert_int_equal(actres_target_compl_calc(ACTRES_NONE),
+                     ACT_TGT_COMPL_SIMPLE);
+
+    /* Test all simple target complexity actions */
+    assert_int_equal(actres_target_compl_calc(ACTRES_ESTABLISH_EMBASSY),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_INVESTIGATE_CITY),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_POISON),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_STEAL_GOLD),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_SABOTAGE_CITY),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_INCITE_CITY),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_TRADE_ROUTE),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_MARKETPLACE),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_HELP_WONDER),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_BRIBE_UNIT),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_BRIBE_STACK),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_SABOTAGE_UNIT),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_CAPTURE_UNITS),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_FOUND_CITY),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_JOIN_CITY),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_STEAL_MAPS),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_BOMBARD),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_NUKE),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_NUKE),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_NUKE_UNITS),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_DESTROY_CITY),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_EXPEL_UNIT),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_DISBAND_UNIT_RECOVER),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_DISBAND_UNIT),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_HOME_CITY),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_HOMELESS),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_UPGRADE_UNIT),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_PARADROP),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_PARADROP_CONQUER),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_AIRLIFT),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_STRIKE_BUILDING),
+                     ACT_TGT_COMPL_MANDATORY);
+    assert_int_equal(actres_target_compl_calc(ACTRES_STRIKE_PRODUCTION),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_ATTACK),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_WIPE_UNITS),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_ATTACK),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_COLLECT_RANSOM),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_CONQUER_CITY),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_HEAL_UNIT),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_TRANSFORM_TERRAIN),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_CULTIVATE),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_PLANT),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_FORTIFY),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_CONVERT),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_CONQUER_EXTRAS),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_HUT_ENTER),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_HUT_FRIGHTEN),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_UNIT_MOVE),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_TELEPORT),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_TELEPORT_CONQUER),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_ENABLER_CHECK),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_ESCAPE),
+                     ACT_TGT_COMPL_SIMPLE);
+    assert_int_equal(actres_target_compl_calc(ACTRES_SPY_SPREAD_PLAGUE),
+                     ACT_TGT_COMPL_SIMPLE);
+}
+
+/* Test actres_dice_type for DRT_CERTAIN */
+static void test_actres_dice_type_certain(void **state)
+{
+    (void) state;
+
+    /* Currently no actions use DRT_CERTAIN, but test the function handles it */
+    /* All diplchance actions are tested in test_actres_dice_type */
+    assert_int_equal(actres_dice_type(ACTRES_NONE), DRT_NONE);
+    assert_int_equal(actres_dice_type(ACTRES_ESTABLISH_EMBASSY), DRT_NONE);
+}
+
 /* Main test suite */
 int main(void)
 {
@@ -923,7 +1396,57 @@ int main(void)
                                         setup_actres, teardown_actres),
         cmocka_unit_test_setup_teardown(test_actres_get_act_time_instantaneous,
                                         setup_actres, teardown_actres),
+        /* New tests for uncovered functions */
+        cmocka_unit_test_setup_teardown(test_actres_creates_extra,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_removes_extra_no_cause,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_legal_target_kind_edge_cases,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_get_act_time_fortify,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_target_kind_default_none,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_sub_target_kind_default_comprehensive,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_activity_result_comprehensive,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_is_hostile_comprehensive,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_get_battle_kind_comprehensive,
+                                        setup_actres, teardown_actres),
+        /* Additional tests for improved coverage */
+        cmocka_unit_test_setup_teardown(test_actres_min_range_default_more,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_max_range_default_more,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_target_compl_calc_all,
+                                        setup_actres, teardown_actres),
+        cmocka_unit_test_setup_teardown(test_actres_dice_type_certain,
+                                        setup_actres, teardown_actres),
     };
 
     return cmocka_run_group_tests(tests, nullptr, nullptr);
 }
+
+/* Additional notes on coverage:
+ * The actres_possible() function is a large, complex function (800+ lines)
+ * that requires extensive game state (units, tiles, cities, players, etc.)
+ * to test properly. Without a mock framework, testing this function would
+ * require significant setup that is beyond the scope of simple unit tests.
+ *
+ * The tests added here cover the simpler utility functions:
+ * - actres_init/free: basic lifecycle
+ * - actres_target_compl_calc: target complexity
+ * - actres_get_battle_kind: battle types
+ * - actres_is_hostile: hostility checks
+ * - actres_activity_result: activity mapping
+ * - actres_get_act_time: action timing
+ * - actres_dice_type: dice roll types
+ * - actres_min/max_range_default: default ranges
+ * - actres_legal_target_kind: target kind validation
+ * - actres_target_kind_default: default target kinds
+ * - actres_sub_target_kind_default: sub target kinds
+ * - actres_creates_extra: extra creation
+ * - actres_removes_extra: extra removal
+ */

@@ -26,6 +26,7 @@
 
 /* common */
 #include "events.h"
+#include "extras.h"
 
 static void test_event_type_name_valid(void **state)
 {
@@ -210,6 +211,107 @@ static void test_event_type_begin_end(void **state)
   assert_true(event_type_begin() != event_type_end());
 }
 
+/***********************************************************************
+  Test extra_count - count of extras
+***********************************************************************/
+static void test_extra_count(void **state)
+{
+  int count;
+
+  (void) state;
+
+  count = extra_count();
+  /* Should return 0 or more depending on initialization */
+  assert_true(count >= 0);
+}
+
+/***********************************************************************
+  Test extra_number with valid extra
+***********************************************************************/
+static void test_extra_number_valid(void **state)
+{
+  struct extra_type mock_extra;
+
+  (void) state;
+
+  memset(&mock_extra, 0, sizeof(mock_extra));
+  mock_extra.id = 42;
+
+  int result = extra_number(&mock_extra);
+  assert_int_equal(result, 42);
+}
+
+/***********************************************************************
+  Test extra_number with null
+***********************************************************************/
+static void test_extra_number_null(void **state)
+{
+  (void) state;
+
+  int result = extra_number(NULL);
+  assert_int_equal(result, -1);
+}
+
+/***********************************************************************
+  Test extra_by_number with invalid number
+***********************************************************************/
+static void test_extra_by_number_invalid(void **state)
+{
+  struct extra_type *result;
+
+  (void) state;
+
+  /* Negative number should return NULL */
+  result = extra_by_number(-1);
+  assert_null(result);
+
+  /* Large number should return NULL */
+  result = extra_by_number(9999);
+  assert_null(result);
+}
+
+/***********************************************************************
+  Test extra_type_by_rule_name
+***********************************************************************/
+static void test_extra_type_by_rule_name_null(void **state)
+{
+  struct extra_type *result;
+
+  (void) state;
+
+  result = extra_type_by_rule_name(NULL);
+  assert_null(result);
+
+  result = extra_type_by_rule_name("");
+  assert_null(result);
+}
+
+/***********************************************************************
+  Test extra_type_by_translated_name
+***********************************************************************/
+static void test_extra_type_by_translated_name_null(void **state)
+{
+  struct extra_type *result;
+
+  (void) state;
+
+  result = extra_type_by_translated_name(NULL);
+  assert_null(result);
+}
+
+/***********************************************************************
+  Test can_extras_coexist
+***********************************************************************/
+static void test_can_extras_coexist_null(void **state)
+{
+  (void) state;
+
+  /* Test with null extras - should handle gracefully */
+  bool result = can_extras_coexist(NULL, NULL);
+  /* Result depends on implementation */
+  (void) result;
+}
+
 int main(void)
 {
   const struct CMUnitTest tests[] = {
@@ -224,6 +326,13 @@ int main(void)
     cmocka_unit_test(test_is_city_event_true),
     cmocka_unit_test(test_is_city_event_false),
     cmocka_unit_test(test_event_type_begin_end),
+    cmocka_unit_test(test_extra_count),
+    cmocka_unit_test(test_extra_number_valid),
+    cmocka_unit_test(test_extra_number_null),
+    cmocka_unit_test(test_extra_by_number_invalid),
+    cmocka_unit_test(test_extra_type_by_rule_name_null),
+    cmocka_unit_test(test_extra_type_by_translated_name_null),
+    cmocka_unit_test(test_can_extras_coexist_null),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

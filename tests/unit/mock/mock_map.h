@@ -13,8 +13,8 @@
 #ifndef FC_MOCK_MAP_H
 #define FC_MOCK_MAP_H
 
-#include "common/map.h"
-#include "common/terrain.h"
+#include "map.h"
+#include "terrain.h"
 
 #ifdef __cplusplus
 extern "C" {

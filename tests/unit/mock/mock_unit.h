@@ -13,7 +13,7 @@
 #ifndef FC_MOCK_UNIT_H
 #define FC_MOCK_UNIT_H
 
-#include "common/unit.h"
+#include "unit.h"
 
 #ifdef __cplusplus
 extern "C" {

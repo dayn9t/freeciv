@@ -1,6 +1,7 @@
 # Common module tests
 
 test_sources = [
+  'test_accessarea.c',
   'test_calendar.c',
   'test_rgbcolor.c',
   'test_sex.c',
@@ -93,16 +94,36 @@ test_sources = [
   'test_server_settings.c',
   # Clientutils module tests
   'test_clientutils.c',
+  # Mapimg module tests
+  'test_mapimg.c',
+  # Networking module tests
+  'test_packets.c',
+  # AI core module tests
+  'test_aicore_aiactions.c',
+  'test_aicore_aisupport.c',
+  'test_aicore_caravan.c',
+  'test_aicore_citymap.c',
+  'test_aicore_pf_tools.c',
 ]
 
 foreach test_file : test_sources
   test_name = test_file.replace('.c', '')
-  test_exe = executable(test_name,
-    test_file,
-    include_directories: [common_inc, include_directories('..'), include_directories('../../..')],
-    link_with: [common_lib],
-    dependencies: [cmocka_dep]
-  )
+  # test_base needs mock library
+  if test_name == 'test_base'
+    test_exe = executable(test_name,
+      test_file,
+      include_directories: [common_inc, include_directories('..'), include_directories('../../..'), mock_inc],
+      link_with: [common_lib, mock_lib],
+      dependencies: [cmocka_dep]
+    )
+  else
+    test_exe = executable(test_name,
+      test_file,
+      include_directories: [common_inc, include_directories('..'), include_directories('../../..')],
+      link_with: [common_lib],
+      dependencies: [cmocka_dep]
+    )
+  endif
   test(test_name, test_exe)
 endforeach
 

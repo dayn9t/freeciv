@@ -14,7 +14,12 @@
 #include "mock_unit.h"
 
 #include "utility/mem.h"
-#include "common/world_object.h"
+#include "utility/shared.h"
+#include "world_object.h"
+#include "unitlist.h"
+#include "map.h"
+#include "tile.h"
+#include "fc_types.h"
 
 static int mock_unit_id_counter = 1;
 
@@ -37,7 +42,7 @@ struct unit *mock_unit_create(struct player *owner, struct unit_type *type, int 
   punit->nationality = owner;
 
   punit->hp = 10;
-  punit->moves_left = SINGLE_MOVE;
+  punit->moves_left = 3;  /* Simplified: fixed move points */
   punit->veteran = 0;
 
   punit->activity = ACTIVITY_IDLE;
@@ -47,10 +52,10 @@ struct unit *mock_unit_create(struct player *owner, struct unit_type *type, int 
   punit->battlegroup = BATTLEGROUP_NONE;
 
   if (owner != NULL) {
-    unit_list_append(owner->units, punit);
+    unit_list_prepend(owner->units, punit);
   }
 
-  unit_list_append(ptile->units, punit);
+  unit_list_prepend(ptile->units, punit);
 
   return punit;
 }

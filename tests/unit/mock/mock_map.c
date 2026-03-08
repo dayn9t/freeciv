@@ -14,7 +14,7 @@
 #include "mock_map.h"
 
 #include "utility/mem.h"
-#include "common/world_object.h"
+#include "world_object.h"
 
 void mock_map_init(int xsize, int ysize)
 {

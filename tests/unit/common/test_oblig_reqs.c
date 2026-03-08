@@ -41,6 +41,40 @@ static int teardown_oblig_reqs(void **state)
     return 0;
 }
 
+/* Setup with nations for testing ruleset-dependent functions */
+static int setup_oblig_reqs_with_nations(void **state)
+{
+    (void) state;
+    game_init(false);
+    oblig_hard_reqs_init();
+
+    /* Allocate 3 nations: one regular, one animal barbarian, one land barbarian */
+    nations_alloc(3);
+
+    /* Set up nation 0 as regular (not a barbarian) */
+    struct nation_type *pnation0 = nation_by_number(0);
+    pnation0->barb_type = NOT_A_BARBARIAN;
+
+    /* Set up nation 1 as animal barbarian */
+    struct nation_type *pnation1 = nation_by_number(1);
+    pnation1->barb_type = ANIMAL_BARBARIAN;
+
+    /* Set up nation 2 as land barbarian */
+    struct nation_type *pnation2 = nation_by_number(2);
+    pnation2->barb_type = LAND_BARBARIAN;
+
+    return 0;
+}
+
+static int teardown_oblig_reqs_with_nations(void **state)
+{
+    (void) state;
+    oblig_hard_reqs_free();
+    nations_free();
+    game_free();
+    return 0;
+}
+
 /* Test oblig_hard_reqs_init and oblig_hard_reqs_free */
 static void test_oblig_hard_reqs_init_free(void **state)
 {
@@ -242,8 +276,8 @@ static void test_action_enabler_contradiction_target(void **state)
     }
 }
 
-/* Test hard_code_oblig_hard_reqs_ruleset */
-static void test_hard_code_oblig_hard_reqs_ruleset(void **state)
+/* Test hard_code_oblig_hard_reqs_ruleset without nations */
+static void test_hard_code_oblig_hard_reqs_ruleset_no_nations(void **state)
 {
     (void) state;
 
@@ -253,6 +287,109 @@ static void test_hard_code_oblig_hard_reqs_ruleset(void **state)
 
     /* Just verify no crash occurred */
     assert_true(1);
+}
+
+/* Test hard_code_oblig_hard_reqs_ruleset with animal barbarian nation */
+static void test_hard_code_oblig_hard_reqs_ruleset_with_animals(void **state)
+{
+    (void) state;
+
+    /* Get initial size of conquer city requirements */
+    hard_code_oblig_hard_reqs();
+    struct obligatory_req_vector *vec = oblig_hard_reqs_get(ACTRES_CONQUER_CITY);
+    int initial_size = vec->size;
+
+    /* Call hard_code_oblig_hard_reqs_ruleset with animal barbarian nation */
+    hard_code_oblig_hard_reqs_ruleset();
+
+    /* After ruleset hard coding with animal barbarians, conquer city should have more requirements */
+    assert_true(vec->size > initial_size);
+
+    /* Verify the requirements have valid structure */
+    for (int i = 0; i < vec->size; i++) {
+        struct obligatory_req *oreq = &vec->p[i];
+        assert_non_null(oreq->contras);
+        assert_non_null(oreq->contras->alternative);
+        assert_true(oreq->contras->alternatives >= 1);
+    }
+}
+
+/* Test hard_code_oblig_hard_reqs_ruleset adds nation requirements */
+static void test_ruleset_nation_requirements_content(void **state)
+{
+    (void) state;
+
+    hard_code_oblig_hard_reqs();
+    hard_code_oblig_hard_reqs_ruleset();
+
+    /* Check that nation-based requirements were added for animal barbarians */
+    struct obligatory_req_vector *vec_conquer = oblig_hard_reqs_get(ACTRES_CONQUER_CITY);
+    bool found_nation_req = false;
+
+    for (int i = 0; i < vec_conquer->size; i++) {
+        struct obligatory_req *oreq = &vec_conquer->p[i];
+        for (int j = 0; j < oreq->contras->alternatives; j++) {
+            struct action_enabler_contradiction *alt = &oreq->contras->alternative[j];
+            if (alt->req.source.kind == VUT_NATION) {
+                found_nation_req = true;
+                /* Nation requirements should target the actor */
+                assert_false(alt->is_target);
+            }
+        }
+    }
+
+    assert_true(found_nation_req);
+}
+
+/* Test hard_code_oblig_hard_reqs_ruleset for paradrop conquer */
+static void test_ruleset_paradrop_conquer_requirements(void **state)
+{
+    (void) state;
+
+    hard_code_oblig_hard_reqs();
+    int initial_size = oblig_hard_reqs_get(ACTRES_PARADROP_CONQUER)->size;
+
+    hard_code_oblig_hard_reqs_ruleset();
+
+    /* Paradrop conquer should also get nation requirements for animal barbarians */
+    struct obligatory_req_vector *vec = oblig_hard_reqs_get(ACTRES_PARADROP_CONQUER);
+    assert_true(vec->size > initial_size);
+}
+
+/* Test that multiple calls to hard_code_oblig_hard_reqs_ruleset work */
+static void test_ruleset_multiple_calls(void **state)
+{
+    (void) state;
+
+    hard_code_oblig_hard_reqs();
+
+    /* First call */
+    hard_code_oblig_hard_reqs_ruleset();
+    int size1 = oblig_hard_reqs_get(ACTRES_CONQUER_CITY)->size;
+
+    /* Second call - should add more requirements (duplicate) */
+    hard_code_oblig_hard_reqs_ruleset();
+    int size2 = oblig_hard_reqs_get(ACTRES_CONQUER_CITY)->size;
+
+    /* Size should increase with each call */
+    assert_true(size2 >= size1);
+}
+
+/* Test error messages for ruleset requirements */
+static void test_ruleset_error_messages(void **state)
+{
+    (void) state;
+
+    hard_code_oblig_hard_reqs();
+    hard_code_oblig_hard_reqs_ruleset();
+
+    /* All requirements should have valid error messages */
+    struct obligatory_req_vector *vec = oblig_hard_reqs_get(ACTRES_CONQUER_CITY);
+    for (int i = 0; i < vec->size; i++) {
+        struct obligatory_req *oreq = &vec->p[i];
+        assert_non_null(oreq->error_msg);
+        assert_true(strlen(oreq->error_msg) > 0);
+    }
 }
 
 /* Test multiple init/free cycles */
@@ -473,8 +610,18 @@ int main(void)
                                         setup_oblig_reqs, teardown_oblig_reqs),
         cmocka_unit_test_setup_teardown(test_action_enabler_contradiction_target,
                                         setup_oblig_reqs, teardown_oblig_reqs),
-        cmocka_unit_test_setup_teardown(test_hard_code_oblig_hard_reqs_ruleset,
+        cmocka_unit_test_setup_teardown(test_hard_code_oblig_hard_reqs_ruleset_no_nations,
                                         setup_oblig_reqs, teardown_oblig_reqs),
+        cmocka_unit_test_setup_teardown(test_hard_code_oblig_hard_reqs_ruleset_with_animals,
+                                        setup_oblig_reqs_with_nations, teardown_oblig_reqs_with_nations),
+        cmocka_unit_test_setup_teardown(test_ruleset_nation_requirements_content,
+                                        setup_oblig_reqs_with_nations, teardown_oblig_reqs_with_nations),
+        cmocka_unit_test_setup_teardown(test_ruleset_paradrop_conquer_requirements,
+                                        setup_oblig_reqs_with_nations, teardown_oblig_reqs_with_nations),
+        cmocka_unit_test_setup_teardown(test_ruleset_multiple_calls,
+                                        setup_oblig_reqs_with_nations, teardown_oblig_reqs_with_nations),
+        cmocka_unit_test_setup_teardown(test_ruleset_error_messages,
+                                        setup_oblig_reqs_with_nations, teardown_oblig_reqs_with_nations),
         cmocka_unit_test_setup_teardown(test_oblig_hard_reqs_multiple_cycles,
                                         setup_oblig_reqs, teardown_oblig_reqs),
         cmocka_unit_test_setup_teardown(test_hard_code_oblig_hard_reqs_multiple_calls,

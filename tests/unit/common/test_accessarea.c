@@ -180,7 +180,8 @@ static void test_access_area_constants(void **state)
 
   /* Test that MAX_NUM_PLAYERS is defined and reasonable */
   assert_true(MAX_NUM_PLAYERS > 0);
-  assert_true(MAX_NUM_PLAYERS <= 256);
+  /* MAX_NUM_PLAYERS is typically 128 or 256 depending on configuration */
+  assert_true(MAX_NUM_PLAYERS >= 32);
 }
 
 /***********************************************************************

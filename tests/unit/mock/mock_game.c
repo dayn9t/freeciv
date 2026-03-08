@@ -14,8 +14,9 @@
 #include "mock_game.h"
 
 #include "utility/mem.h"
-#include "common/map.h"
-#include "common/world_object.h"
+#include "map.h"
+#include "world_object.h"
+#include "city.h"
 
 void mock_game_init_minimal(void)
 {
@@ -23,12 +24,32 @@ void mock_game_init_minimal(void)
 
   game.info.gold = GAME_DEFAULT_GOLD;
   game.info.turn = 0;
-  game.calendar.year = GAME_DEFAULT_START_YEAR;
+  game.info.foodbox = 100;
+  game.info.granary_num_inis = 2;
+  game.info.granary_food_ini[0] = 20;
+  game.info.granary_food_ini[1] = 20;
+  game.info.granary_food_inc = 10;
+  /* Year is stored in game.info.year, not in calendar */
 
   game.server.settings_gamestart_valid = FALSE;
   game.server.end_turn = GAME_DEFAULT_END_TURN;
   game.server.global_warming = GAME_DEFAULT_GLOBAL_WARMING;
   game.server.nuclear_winter = GAME_DEFAULT_NUCLEAR_WINTER;
+}
+
+void mock_game_init_with_map(void)
+{
+  /* First clean up any existing state */
+  mock_game_cleanup();
+
+  /* Then initialize minimal game state */
+  mock_game_init_minimal();
+
+  /* Then initialize map */
+  mock_game_init_map(16, 16);
+
+  /* Finally initialize city map indices (must be called after map init) */
+  generate_city_map_indices();
 }
 
 void mock_game_cleanup(void)
@@ -37,6 +58,7 @@ void mock_game_cleanup(void)
     main_map_free();
   }
 
+  free_city_map_index();
   memset(&game, 0, sizeof(game));
 }
 
@@ -45,6 +67,10 @@ void mock_game_init_map(int xsize, int ysize)
   if (wld.map.tiles != NULL) {
     main_map_free();
   }
+
+  /* Ensure minimum map size */
+  if (xsize < 16) xsize = 16;
+  if (ysize < 16) ysize = 16;
 
   wld.map.topology_id = MAP_DEFAULT_TOPO;
   wld.map.wrap_id = MAP_DEFAULT_WRAP;
@@ -57,7 +83,7 @@ void mock_game_init_map(int xsize, int ysize)
 
 void mock_game_set_year(int year)
 {
-  game.calendar.year = year;
+  game.info.year = year;
 }
 
 void mock_game_set_turn(int turn)

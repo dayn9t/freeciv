@@ -13,7 +13,7 @@
 #ifndef FC_MOCK_PLAYER_H
 #define FC_MOCK_PLAYER_H
 
-#include "common/player.h"
+#include "player.h"
 
 #ifdef __cplusplus
 extern "C" {

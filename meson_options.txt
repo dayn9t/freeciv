@@ -1,13 +1,13 @@
 option('clients',
        type: 'array',
        choices: ['gtk3.22','sdl2', 'qt', 'gtk4', 'stub', 'sdl3', 'gtk4x'],
-       value: ['gtk4'],
+       value: [],
        description: 'Clients to build')
 
 option('fcmp',
        type: 'array',
        choices: ['gtk3','qt','cli','gtk4', 'gtk4x'],
-       value: ['gtk4'],
+       value: [],
        description: 'Modpack installer UIs to build')
 
 option('cacert-path',
@@ -54,7 +54,7 @@ option('audio',
 option('tools',
        type: 'array',
        choices: ['ruledit', 'manual', 'ruleup'],
-       value: ['ruledit', 'manual', 'ruleup'],
+       value: [],
        description: 'Extra tools to build')
 
 option('nls',

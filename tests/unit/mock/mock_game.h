@@ -13,13 +13,14 @@
 #ifndef FC_MOCK_GAME_H
 #define FC_MOCK_GAME_H
 
-#include "common/game.h"
+#include "game.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 void mock_game_init_minimal(void);
+void mock_game_init_with_map(void);
 void mock_game_cleanup(void);
 void mock_game_init_map(int xsize, int ysize);
 void mock_game_set_year(int year);

@@ -13,7 +13,7 @@
 #ifndef FC_MOCK_CITY_H
 #define FC_MOCK_CITY_H
 
-#include "common/city.h"
+#include "city.h"
 
 #ifdef __cplusplus
 extern "C" {
