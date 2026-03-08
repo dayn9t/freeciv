@@ -1670,20 +1670,29 @@ static void test_unit_link_basic(void **state)
 }
 
 /* Test city_tile_link() basic functionality
- * Skip - requires valid map state for TILE_XY macro */
+ * Skip - requires valid map for tile index to x/y conversion */
 static void test_city_tile_link_basic(void **state)
 {
   (void) state;
-  /* Skip - requires full map initialization */
+  /* Skip - requires full map initialization for TILE_XY macro */
   skip();
 }
 
 /* Test unit_tile_link() basic functionality
- * Skip - requires valid map state for TILE_XY macro */
+ * Skip - requires valid map for tile index to x/y conversion */
 static void test_unit_tile_link_basic(void **state)
 {
   (void) state;
-  /* Skip - requires full map initialization */
+  /* Skip - requires full map initialization for TILE_XY macro */
+  skip();
+}
+
+/* Test tile_link() basic functionality
+ * Skip - requires valid map for tile index to x/y conversion */
+static void test_tile_link_basic_full(void **state)
+{
+  (void) state;
+  /* Skip - requires full map initialization for TILE_XY macro */
   skip();
 }
 
@@ -1839,6 +1848,7 @@ int main(void)
     cmocka_unit_test(test_unit_link_basic),
     cmocka_unit_test(test_city_tile_link_basic),
     cmocka_unit_test(test_unit_tile_link_basic),
+    cmocka_unit_test(test_tile_link_basic_full),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
