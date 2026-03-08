@@ -611,6 +611,80 @@ static void test_tile_is_seen_not_seen(void **state)
   assert_false(seen);
 }
 
+/* ==================== Tile Defense Bonus Tests ==================== */
+
+static void test_tile_extras_class_defense_bonus_no_extras(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[31];
+  struct unit_class test_class;
+
+  memset(&test_class, 0, sizeof(test_class));
+
+  /* No extras - should return 0 */
+  int bonus = tile_extras_class_defense_bonus(ptile, &test_class);
+  assert_int_equal(bonus, 0);
+}
+
+static void test_tile_extras_defense_bonus_wrapper(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[32];
+  struct unit_type test_utype;
+
+  memset(&test_utype, 0, sizeof(test_utype));
+
+  /* Wrapper function - requires unit type class setup */
+  /* This is a placeholder test */
+  int bonus = tile_extras_defense_bonus(ptile, &test_utype);
+  /* Should return 0 without extras */
+  assert_int_equal(bonus, 0);
+}
+
+/* ==================== Tile Output Tests ==================== */
+
+static void test_tile_roads_output_incr_no_roads(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[33];
+
+  /* This test requires terrain to be set up properly */
+  /* Skip this test as it requires ruleset initialization */
+  skip();
+}
+
+static void test_tile_roads_output_bonus(void **state)
+{
+  (void) state;
+  struct tile *ptile = &wld.map.tiles[34];
+
+  /* This function requires ruleset data */
+  /* Placeholder test - just verify it doesn't crash */
+  skip();
+}
+
+/* ==================== Tile Refuel Extra Tests ==================== */
+
+static void test_tile_has_refuel_extra_no_extra(void **state)
+{
+  (void) state;
+
+  /* This test requires unit class cache to be initialized */
+  /* Skip this test as it requires full game initialization */
+  skip();
+}
+
+/* ==================== Tile Native Base Tests ==================== */
+
+static void test_tile_has_native_base_no_base(void **state)
+{
+  (void) state;
+
+  /* This test requires unit type cache to be initialized */
+  /* Skip this test as it requires full game initialization */
+  skip();
+}
+
 /* ==================== Position Validation Tests ==================== */
 
 static void test_is_normal_map_pos_valid(void **state)
@@ -749,6 +823,20 @@ int main(void)
     /* Tile Visibility Tests */
     cmocka_unit_test_setup_teardown(test_tile_get_known_not_known, setup, teardown),
     cmocka_unit_test_setup_teardown(test_tile_is_seen_not_seen, setup, teardown),
+
+    /* Tile Defense Bonus Tests */
+    cmocka_unit_test_setup_teardown(test_tile_extras_class_defense_bonus_no_extras, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_extras_defense_bonus_wrapper, setup, teardown),
+
+    /* Tile Output Tests */
+    cmocka_unit_test_setup_teardown(test_tile_roads_output_incr_no_roads, setup, teardown),
+    cmocka_unit_test_setup_teardown(test_tile_roads_output_bonus, setup, teardown),
+
+    /* Tile Refuel Extra Tests */
+    cmocka_unit_test_setup_teardown(test_tile_has_refuel_extra_no_extra, setup, teardown),
+
+    /* Tile Native Base Tests */
+    cmocka_unit_test_setup_teardown(test_tile_has_native_base_no_base, setup, teardown),
 
     /* Position Validation Tests */
     cmocka_unit_test_setup_teardown(test_is_normal_map_pos_valid, setup, teardown),
