@@ -1116,6 +1116,44 @@ static void test_game_city_by_name_empty(void **state)
 }
 
 /***********************************************************************
+  Test game_remove_unit - skipped due to complex state requirements
+  Note: game_remove_unit requires full map and unit initialization
+  with valid tile coordinates. This test is disabled pending improved
+  mock framework (task #34).
+***********************************************************************/
+static void test_game_remove_unit_stub(void **state)
+{
+  (void) state;
+  /* Skip - requires full map and unit initialization */
+  skip();
+}
+
+/***********************************************************************
+  Test game_remove_city - skipped due to complex state requirements
+  Note: game_remove_city requires full map and city initialization
+  with valid tile coordinates. This test is disabled pending improved
+  mock framework.
+***********************************************************************/
+static void test_game_remove_city_stub(void **state)
+{
+  (void) state;
+  /* Skip - requires full map and city initialization */
+  skip();
+}
+
+/***********************************************************************
+  Test game_map_init - skipped due to complex state requirements
+  Note: game_map_init requires server mode and full world initialization.
+  This test is disabled pending improved mock framework.
+***********************************************************************/
+static void test_game_map_init_stub(void **state)
+{
+  (void) state;
+  /* Skip - requires server mode and full world initialization */
+  skip();
+}
+
+/***********************************************************************
   Test game server mode initialization
 ***********************************************************************/
 static void test_game_init_server_mode(void **state)
@@ -1755,6 +1793,11 @@ int main(void)
     cmocka_unit_test_setup_teardown(test_generate_save_name_basic,
                                      test_game_lifecycle_setup,
                                      test_game_lifecycle_teardown),
+
+    /* Game remove unit/city tests - stubs pending mock framework */
+    cmocka_unit_test(test_game_remove_unit_stub),
+    cmocka_unit_test(test_game_remove_city_stub),
+    cmocka_unit_test(test_game_map_init_stub),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
