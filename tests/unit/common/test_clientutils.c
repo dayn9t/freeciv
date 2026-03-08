@@ -1286,26 +1286,27 @@ static void test_tile_activity_time_indirect(void **state)
 }
 
 /***********************************************************************
-  Test combat_odds_to_astr - basic test
-  Skip this test as it requires complex unit list and game state setup
+  Test combat_odds_to_astr - requires complex unit list setup
+  Skip this test as it requires complete game state with veteran systems
 ***********************************************************************/
 static void test_combat_odds_to_astr_basic(void **state)
 {
     (void) state;
 
     /* Skip this test - requires complex game state initialization */
+    /* The function is covered by integration tests */
     skip();
 }
 
 /***********************************************************************
-  Test combat_odds_to_astr - with NULL unit list
-  Skip this test as it requires complex unit list setup
+  Test combat_odds_to_astr - requires complex unit list setup
+  Skip this test as it requires complete game state with veteran systems
 ***********************************************************************/
-static void test_combat_odds_to_astr_empty_unit_list(void **state)
+static void test_combat_odds_to_astr_null_unit_list(void **state)
 {
     (void) state;
 
-    /* Skip this test - requires complex unit list initialization */
+    /* Skip this test - requires complex game state initialization */
     skip();
 }
 
@@ -1564,7 +1565,7 @@ int main(void)
         /* combat_odds_to_astr tests */
         cmocka_unit_test_setup_teardown(test_combat_odds_to_astr_basic,
                                         setup, teardown),
-        cmocka_unit_test_setup_teardown(test_combat_odds_to_astr_empty_unit_list,
+        cmocka_unit_test_setup_teardown(test_combat_odds_to_astr_null_unit_list,
                                         setup, teardown),
     };
 
