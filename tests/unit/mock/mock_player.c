@@ -61,6 +61,14 @@ struct player *mock_player_create(int id)
   return pplayer;
 }
 
+struct player *mock_player_get(int id)
+{
+  if (mock_slots == NULL || id < 0 || id >= mock_slot_count) {
+    return NULL;
+  }
+  return mock_slots[id].player;
+}
+
 void mock_player_destroy(struct player *pplayer)
 {
   if (pplayer == NULL) {

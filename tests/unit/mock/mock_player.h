@@ -22,6 +22,7 @@ extern "C" {
 struct player *mock_player_create(int id);
 void mock_player_destroy(struct player *pplayer);
 void mock_player_setup_nation(struct player *pplayer, const char *nation);
+struct player *mock_player_get(int id);
 
 #ifdef __cplusplus
 }

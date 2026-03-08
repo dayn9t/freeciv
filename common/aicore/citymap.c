@@ -111,6 +111,7 @@ void citymap_free(void)
 {
   if (citymap != nullptr) {
     FC_FREE(citymap);
+    citymap = nullptr;
   }
 }
 

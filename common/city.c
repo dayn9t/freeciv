@@ -609,6 +609,7 @@ void generate_city_map_indices(void)
 void free_city_map_index(void)
 {
   FC_FREE(city_map_index);
+  city_map_index = nullptr;
 }
 
 /**********************************************************************//**

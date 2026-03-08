@@ -48,8 +48,7 @@ void mock_game_init_with_map(void)
   /* Then initialize map */
   mock_game_init_map(16, 16);
 
-  /* Finally initialize city map indices (must be called after map init) */
-  generate_city_map_indices();
+  /* Note: generate_city_map_indices() is already called by main_map_allocate() */
 }
 
 void mock_game_cleanup(void)
