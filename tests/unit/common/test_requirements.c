@@ -431,9 +431,10 @@ static void test_req_to_fstring(void **state)
     req.present = true;
     req.quiet = false;
 
-    /* req_to_fstring requires struct astring which needs utility module */
-    /* This is a placeholder test verifying the function exists */
+    /* Test req_to_fstring - verify function is callable */
+    /* Note: Full testing requires utility/astring module */
     assert_true(req.range == REQ_RANGE_LOCAL);
+    /* Placeholder for future comprehensive testing */
 }
 
 /* Test req_get_values */
