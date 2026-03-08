@@ -1509,6 +1509,48 @@ static void test_game_info_warming_counters(void **state)
   assert_int_equal(game.info.cooling, 25);
 }
 
+/***********************************************************************
+  Additional game function tests for coverage
+***********************************************************************/
+
+/* Test game_city_by_name() - basic test */
+static void test_game_city_by_name_basic(void **state)
+{
+  struct city *result;
+
+  (void) state;
+
+  /* With no cities, should return NULL */
+  result = game_city_by_name("NonExistentCity");
+  assert_null(result);
+}
+
+/* Test civ_population() with no cities */
+static void test_civ_population_empty(void **state)
+{
+  struct player test_player;
+  int population;
+
+  (void) state;
+
+  memset(&test_player, 0, sizeof(test_player));
+  test_player.cities = city_list_new();
+
+  population = civ_population(&test_player);
+  assert_int_equal(population, 0);
+
+  city_list_destroy(test_player.cities);
+}
+
+/* Test population_to_text() - basic test
+ * Skip - requires proper locale and game state initialization */
+static void test_population_to_text_basic(void **state)
+{
+  (void) state;
+  /* Skip - requires locale initialization */
+  skip();
+}
+
 int main(void)
 {
   const struct CMUnitTest tests[] = {
@@ -1565,7 +1607,6 @@ int main(void)
     cmocka_unit_test(test_user_flag_free),
 
     /* generate_save_name tests */
-    cmocka_unit_test(test_generate_save_name_basic),
     cmocka_unit_test(test_generate_save_name_with_format),
     cmocka_unit_test(test_generate_save_name_null_reason),
     cmocka_unit_test(test_generate_save_name_year_negative),
@@ -1700,6 +1741,20 @@ int main(void)
     cmocka_unit_test(test_game_info_year_zero),
     cmocka_unit_test(test_game_info_counters),
     cmocka_unit_test(test_game_info_warming_counters),
+
+    /* Additional game function tests for coverage */
+    cmocka_unit_test_setup_teardown(test_game_city_by_name_basic,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_civ_population_empty,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_population_to_text_basic,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
+    cmocka_unit_test_setup_teardown(test_generate_save_name_basic,
+                                     test_game_lifecycle_setup,
+                                     test_game_lifecycle_teardown),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

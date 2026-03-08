@@ -19,7 +19,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-struct city *mock_city_create(struct player *owner, const char *name, int x, int y);
+struct city *mock_city_create(struct player *owner, int x, int y);
 void mock_city_destroy(struct city *pcity);
 
 #ifdef __cplusplus

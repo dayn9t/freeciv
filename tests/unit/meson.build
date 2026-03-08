@@ -2,4 +2,5 @@
 if enable_tests
   subdir('mock')  # Mock framework for unit testing
   subdir('common')
+  subdir('server')
 endif

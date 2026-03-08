@@ -18,7 +18,7 @@
 
 static int mock_city_id_counter = 1;
 
-struct city *mock_city_create(struct player *owner, const char *name, int x, int y)
+struct city *mock_city_create(struct player *owner, int x, int y)
 {
   struct city *pcity;
 
@@ -28,7 +28,7 @@ struct city *mock_city_create(struct player *owner, const char *name, int x, int
   pcity = fc_calloc(1, sizeof(struct city));
 
   pcity->id = mock_city_id_counter++;
-  pcity->name = fc_strdup(name);
+  pcity->name = fc_strdup("Mock City");
   pcity->owner = owner;
   pcity->tile = NULL;  /* Simplified - no tile association */
 

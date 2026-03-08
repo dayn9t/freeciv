@@ -116,6 +116,14 @@ foreach test_file : test_sources
       link_with: [common_lib, mock_lib],
       dependencies: [cmocka_dep]
     )
+  # AI core tests need mock library
+  elif test_name.startswith('test_aicore_')
+    test_exe = executable(test_name,
+      test_file,
+      include_directories: [common_inc, include_directories('..'), include_directories('../../..'), mock_inc],
+      link_with: [common_lib, mock_lib],
+      dependencies: [cmocka_dep]
+    )
   else
     test_exe = executable(test_name,
       test_file,

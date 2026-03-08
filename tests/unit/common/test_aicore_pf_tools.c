@@ -29,18 +29,26 @@
 #include "common/player.h"
 #include "common/unittype.h"
 
+/* mock */
+#include "mock_game.h"
+#include "mock_map.h"
+#include "mock_player.h"
+#include "mock_unit.h"
+
 /* Test setup and teardown */
 static int setup_pf_tools(void **state)
 {
     (void) state;
-    game_init(false);
+    /* Initialize game with map, but skip city map indices which aren't needed */
+    mock_game_init_minimal();
+    mock_game_init_map(16, 16);
     return 0;
 }
 
 static int teardown_pf_tools(void **state)
 {
     (void) state;
-    game_free();
+    mock_game_cleanup();
     return 0;
 }
 
@@ -49,15 +57,13 @@ static void test_pft_fill_unit_parameter(void **state)
 {
     (void) state;
 
-    struct player *p1 = player_by_number(0);
-    if (p1 == NULL) {
-        skip();
-        return;
-    }
+    struct player *p1 = mock_player_create(0);
+    assert_non_null(p1);
 
     struct unit_type *utype = utype_by_number(0);
     if (utype == NULL) {
         skip();
+        mock_player_destroy(p1);
         return;
     }
 
@@ -74,6 +80,8 @@ static void test_pft_fill_unit_parameter(void **state)
     assert_ptr_equal(param.map, &wld.map);
     assert_ptr_equal(param.owner, p1);
     assert_true(param.move_rate > 0);
+
+    mock_player_destroy(p1);
 }
 
 /* Test pft_fill_utype_parameter */
@@ -81,21 +89,20 @@ static void test_pft_fill_utype_parameter(void **state)
 {
     (void) state;
 
-    struct player *p1 = player_by_number(0);
-    if (p1 == NULL) {
-        skip();
-        return;
-    }
+    struct player *p1 = mock_player_create(0);
+    assert_non_null(p1);
 
     struct unit_type *utype = utype_by_number(0);
     if (utype == NULL) {
         skip();
+        mock_player_destroy(p1);
         return;
     }
 
     struct tile *start = map_pos_to_tile(&wld.map, 8, 8);
     if (start == NULL) {
         skip();
+        mock_player_destroy(p1);
         return;
     }
 
@@ -106,6 +113,8 @@ static void test_pft_fill_utype_parameter(void **state)
     assert_ptr_equal(param.owner, p1);
     assert_ptr_equal(param.start_tile, start);
     assert_ptr_equal(param.utype, utype);
+
+    mock_player_destroy(p1);
 }
 
 /* Test pft_fill_unit_overlap_param */
@@ -113,15 +122,13 @@ static void test_pft_fill_unit_overlap_param(void **state)
 {
     (void) state;
 
-    struct player *p1 = player_by_number(0);
-    if (p1 == NULL) {
-        skip();
-        return;
-    }
+    struct player *p1 = mock_player_create(0);
+    assert_non_null(p1);
 
     struct unit_type *utype = utype_by_number(0);
     if (utype == NULL) {
         skip();
+        mock_player_destroy(p1);
         return;
     }
 
@@ -136,6 +143,8 @@ static void test_pft_fill_unit_overlap_param(void **state)
 
     assert_ptr_not_equal(param.get_MC, NULL);
     assert_false(param.ignore_none_scopes);
+
+    mock_player_destroy(p1);
 }
 
 /* Test pft_fill_unit_attack_param */
@@ -143,15 +152,13 @@ static void test_pft_fill_unit_attack_param(void **state)
 {
     (void) state;
 
-    struct player *p1 = player_by_number(0);
-    if (p1 == NULL) {
-        skip();
-        return;
-    }
+    struct player *p1 = mock_player_create(0);
+    assert_non_null(p1);
 
     struct unit_type *utype = utype_by_number(0);
     if (utype == NULL) {
         skip();
+        mock_player_destroy(p1);
         return;
     }
 
@@ -164,6 +171,8 @@ static void test_pft_fill_unit_attack_param(void **state)
     pft_fill_unit_attack_param(&param, &wld.map, &unit);
 
     assert_true(param.actions & PF_AA_UNIT_ATTACK);
+
+    mock_player_destroy(p1);
 }
 
 /* Test pft_fill_reverse_parameter */

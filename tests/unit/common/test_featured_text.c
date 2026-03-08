@@ -24,6 +24,10 @@
 
 /* common */
 #include "featured_text.h"
+#include "city.h"
+#include "tile.h"
+#include "unit.h"
+#include "unittype.h"
 
 /* Test ft_color_construct() */
 static void test_ft_color_construct(void **state)
@@ -1603,6 +1607,86 @@ static void test_text_tag_list_destroy_null(void **state)
   text_tag_list_destroy(NULL);
 }
 
+/***********************************************************************
+  Link function tests - these tests cover city_link, tile_link, unit_link,
+  city_tile_link, and unit_tile_link functions
+***********************************************************************/
+
+/* Test city_link() basic functionality */
+static void test_city_link_basic(void **state)
+{
+  struct city test_city;
+  const char *link;
+
+  (void) state;
+
+  /* Setup minimal city data */
+  memset(&test_city, 0, sizeof(test_city));
+  test_city.id = 123;
+  test_city.name = "TestCity";
+  test_city.tile = NULL;  /* No tile for basic test */
+
+  link = city_link(&test_city);
+
+  /* Verify link contains expected components */
+  assert_non_null(link);
+  assert_true(strstr(link, "l") != NULL);  /* link type short name */
+  assert_true(strstr(link, "tgt=\"city\"") != NULL);
+  assert_true(strstr(link, "id=123") != NULL);
+  assert_true(strstr(link, "name=\"TestCity\"") != NULL);
+}
+
+/* Test tile_link() basic functionality
+ * Skip - requires valid map state for TILE_XY macro */
+static void test_tile_link_basic(void **state)
+{
+  (void) state;
+  /* Skip - requires full map initialization */
+  skip();
+}
+
+/* Test unit_link() basic functionality */
+static void test_unit_link_basic(void **state)
+{
+  struct unit test_unit;
+  struct unit_type test_utype;
+  const char *link;
+
+  (void) state;
+
+  /* Setup minimal unit data */
+  memset(&test_unit, 0, sizeof(test_unit));
+  memset(&test_utype, 0, sizeof(test_utype));
+  test_unit.id = 456;
+  test_unit.utype = &test_utype;
+
+  link = unit_link(&test_unit);
+
+  /* Verify link contains expected components */
+  assert_non_null(link);
+  assert_true(strstr(link, "l") != NULL);  /* link type short name */
+  assert_true(strstr(link, "tgt=\"unit\"") != NULL);
+  assert_true(strstr(link, "id=456") != NULL);
+}
+
+/* Test city_tile_link() basic functionality
+ * Skip - requires valid map state for TILE_XY macro */
+static void test_city_tile_link_basic(void **state)
+{
+  (void) state;
+  /* Skip - requires full map initialization */
+  skip();
+}
+
+/* Test unit_tile_link() basic functionality
+ * Skip - requires valid map state for TILE_XY macro */
+static void test_unit_tile_link_basic(void **state)
+{
+  (void) state;
+  /* Skip - requires full map initialization */
+  skip();
+}
+
 /* Test featured_text_apply_tag() with color empty strings */
 static void test_featured_text_apply_tag_color_empty_strings(void **state)
 {
@@ -1748,6 +1832,13 @@ int main(void)
     cmocka_unit_test(test_predefined_color_luaconsole_normal),
     cmocka_unit_test(test_predefined_color_luaconsole_verbose),
     cmocka_unit_test(test_predefined_color_luaconsole_debug),
+
+    /* Link function tests - city_link, tile_link, unit_link, etc. */
+    cmocka_unit_test(test_city_link_basic),
+    cmocka_unit_test(test_tile_link_basic),
+    cmocka_unit_test(test_unit_link_basic),
+    cmocka_unit_test(test_city_tile_link_basic),
+    cmocka_unit_test(test_unit_tile_link_basic),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

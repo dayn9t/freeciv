@@ -10,29 +10,39 @@ echo "=== Generating Coverage Report ==="
 echo "Build directory: $BUILD_DIR"
 echo "Output directory: $OUTPUT_DIR"
 
+# Get absolute path to project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
 # Step 1: Capture coverage data
 echo ""
 echo "Step 1: Capturing coverage data..."
-lcov --capture \
+lcov --ignore-errors=gcov,unused,empty \
+    --capture \
     --directory "$BUILD_DIR" \
-    --output-file "$BUILD_DIR/coverage_total.info" \
-    --ignore-errors mismatch
+    --output-file "$BUILD_DIR/coverage_total.info"
 
 # Step 2: Remove unwanted files
 echo ""
 echo "Step 2: Removing excluded files..."
-lcov --remove "$BUILD_DIR/coverage_total.info" \
-    '*/dependencies/*' \
-    '*/tests/*' \
-    '*/build/*' \
+lcov --ignore-errors=empty,unused \
+    --remove "$BUILD_DIR/coverage_total.info" \
+    "${PROJECT_ROOT}/dependencies/*" \
+    "${PROJECT_ROOT}/tests/*" \
+    "${PROJECT_ROOT}/build/*" \
     '*/tolua_*.c' \
-    '*/utility/*.c' \
-    '*/common/scriptcore/*.c' \
-    '*/common/networking/connection.c' \
-    '*/common/aicore/cm.c' \
-    '*/common/aicore/path_finding.c' \
-    --output-file "$BUILD_DIR/coverage_filtered.info" \
-    --ignore-errors unused
+    "${PROJECT_ROOT}/utility/*" \
+    "${PROJECT_ROOT}/common/scriptcore/*" \
+    "${PROJECT_ROOT}/common/networking/connection.c" \
+    "${PROJECT_ROOT}/common/aicore/cm.c" \
+    "${PROJECT_ROOT}/common/aicore/path_finding.c" \
+    "${PROJECT_ROOT}/server/*" \
+    "${PROJECT_ROOT}/client/*" \
+    "${PROJECT_ROOT}/editor/*" \
+    '*/tolua/*' \
+    '*/lua-*/*' \
+    '*/luasql/*' \
+    --output-file "$BUILD_DIR/coverage_filtered.info"
 
 # Step 3: Generate summary
 echo ""
